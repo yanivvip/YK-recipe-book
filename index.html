@@ -333,6 +333,7 @@ body.admin-active .admin-only{display:inline-flex;}
     <h3>✏️ עריכת מתכון</h3>
     <label>שם המתכון</label><input id="eName" type="text">
     <label>שף / מי הכין</label><input id="eBy" type="text">
+    <label>זמן הכנה (לדוגמה: 30 דקות, שעה)</label><input id="eTime" type="text">
     <label>תיאור</label><textarea id="eDesc" rows="2"></textarea>
     <label>מרכיבים (שורה לכל מרכיב)</label><textarea id="eIng" rows="6"></textarea>
     <label>שלבי הכנה (שורה לכל שלב)</label><textarea id="eSteps" rows="6"></textarea>
@@ -818,8 +819,10 @@ function openEdit(id) {
     bodyEl.querySelectorAll('ul li').forEach(function(li){ ings.push(li.textContent.trim()); });
     bodyEl.querySelectorAll('ol li').forEach(function(li){ stps.push(li.textContent.trim()); });
   }
+  var timeSpan = el.querySelector('.meta span:nth-child(2)');
   document.getElementById('eName').value = nameEl ? nameEl.textContent.trim() : '';
   document.getElementById('eBy').value   = byEl   ? byEl.textContent.replace('✦ ','').trim() : '';
+  document.getElementById('eTime').value = timeSpan ? timeSpan.textContent.replace('⏱ ','').trim() : '';
   document.getElementById('eDesc').value = descEl ? descEl.textContent.trim() : '';
   document.getElementById('eIng').value  = ings.join('\n');
   document.getElementById('eSteps').value= stps.join('\n');
@@ -848,7 +851,7 @@ function saveEdit() {
     cat:         cat,
     emoji:       emojiEl ? emojiEl.textContent.trim() : '🍽️',
     by:          document.getElementById('eBy').value.trim(),
-    time:        timeEl ? timeEl.textContent.replace('⏱ ','').trim() : '',
+    time:        document.getElementById('eTime').value.trim(),
     servings:    servEl ? servEl.textContent.replace('👥 ','').trim() : '',
     desc:        document.getElementById('eDesc').value.trim(),
     ingredients: document.getElementById('eIng').value.trim().split('\n').filter(Boolean).join('|'),
