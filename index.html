@@ -8,6 +8,7 @@
 <meta property="og:description" id="og-desc" content="מתכונים משפחתיים שעוברים מדור לדור">
 <meta property="og:url" id="og-url" content="https://yanivvip.github.io/YK-recipe-book">
 <meta property="og:image" content="https://yanivvip.github.io/YK-recipe-book/preview.jpg">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -74,6 +75,10 @@ body { font-family: Arial, "Helvetica Neue", sans-serif; background:#f7f5f0; col
 
 /* RECIPE DETAILS */
 .recipe { background:#fff; border:1px solid #e5e3de; border-radius:12px; margin-bottom:8px; overflow:hidden; }
+.admin-active .recipe { cursor:grab; }
+.admin-active .recipe:active { cursor:grabbing; }
+.sortable-ghost { opacity:0.4; background:#e8f4ed; border:2px dashed #2d6a4f; }
+.sortable-drag { box-shadow:0 8px 24px rgba(0,0,0,0.15); }
 .recipe[open] { border-color:#2d6a4f; box-shadow:0 4px 20px rgba(45,106,79,.12); }
 
 .recipe-summary { padding:14px 18px; cursor:pointer; list-style:none; display:flex; align-items:center; gap:10px; flex-wrap:wrap; user-select:none; }
@@ -227,7 +232,7 @@ body.admin-active .admin-only{display:inline-flex;}
   <h1>📖 ספר המתכונים של יניב</h1>
   <p>מתכונים משפחתיים שעוברים מדור לדור</p>
   <div class="stats">
-    <div class="stat"><span class="stat-num" id="stat-recipes">83</span><span class="stat-label">מתכונים</span></div>
+    <div class="stat"><span class="stat-num" id="stat-recipes">⋯</span><span class="stat-label">מתכונים</span></div>
     <div class="stat"><span class="stat-num" id="stat-cats">11</span><span class="stat-label">קטגוריות</span></div>
     <div class="stat"><span class="stat-num" id="stat-authors">10</span><span class="stat-label">טבחים</span></div>
   </div>
@@ -443,7 +448,7 @@ function dbDelete(path, cb) {
 
 // ── Migration (one-time) ──────────────────────────────────────────────────────
 function migrateIfNeeded() {
-  dbGet('/migrated_v8', function(val) {
+  dbGet('/migrated_v9', function(val) {
     if (val === true) { loadCloudRecipes(); return; }
     var banner = document.getElementById('cloudBanner');
     if (banner) { banner.style.display='block'; banner.textContent='⏳ מנקה ומטעין מחדש...'; }
@@ -454,7 +459,7 @@ function migrateIfNeeded() {
         dbSet('/recipes/' + r.originalId, r, function() {
           done++;
           if (done === total) {
-            dbSet('/migrated_v8', true, function() {
+            dbSet('/migrated_v9', true, function() {
               if (banner) banner.style.display='none';
               loadCloudRecipes();
             });
@@ -550,6 +555,15 @@ function loadCloudRecipes() {
       addRecipeToPage(r);
     });
     updateStats();
+    // טען סדר שמור לכל קטגוריה
+    var secs = document.querySelectorAll('.cat-section');
+    var pending = secs.length;
+    if (pending === 0) return;
+    secs.forEach(function(sec) {
+      loadCatOrder(sec, function() {
+        pending--;
+      });
+    });
   });
 }
 
@@ -607,9 +621,67 @@ function addRecipeToPage(r) {
     '</div>';
 
   sec.appendChild(el);
-  // עדכן ספירה מיידית
-  var sr = document.getElementById('stat-recipes');
-  if (sr) sr.textContent = document.querySelectorAll('.cloud-recipe').length;
+}
+
+// ── Drag & Drop סידור מתכונים ────────────────────────────────────────────────
+var sortableInstances = [];
+
+function initDragDrop() {
+  sortableInstances.forEach(function(s){ s.destroy(); });
+  sortableInstances = [];
+  document.querySelectorAll('.cat-section').forEach(function(sec) {
+    var inst = Sortable.create(sec, {
+      animation: 150,
+      handle: '.recipe-summary',
+      filter: '.btn-edit,.btn-delete,.btn-print-one,.btn-share',
+      draggable: '.recipe',
+      ghostClass: 'sortable-ghost',
+      dragClass: 'sortable-drag',
+      onEnd: function(evt) {
+        saveCatOrder(sec);
+      }
+    });
+    sortableInstances.push(inst);
+  });
+}
+
+function destroyDragDrop() {
+  sortableInstances.forEach(function(s){ s.destroy(); });
+  sortableInstances = [];
+}
+
+function saveCatOrder(sec) {
+  var catName = '';
+  var titleEl = sec.querySelector('.cat-title');
+  if (titleEl) {
+    catName = titleEl.textContent.replace(/[^\u0590-\u05FFa-zA-Z0-9 ]/g,'').trim();
+  }
+  var ids = [];
+  sec.querySelectorAll('.recipe').forEach(function(el){
+    ids.push(el.getAttribute('data-fbkey') || el.id);
+  });
+  var key = 'order_' + catName.replace(/[^\u0590-\u05FFa-zA-Z0-9]/g,'_');
+  dbSet('/' + key, ids.join(','), function(){
+    showToast('סדר נשמר ✅');
+  });
+}
+
+function loadCatOrder(sec, callback) {
+  var catName = '';
+  var titleEl = sec.querySelector('.cat-title');
+  if (titleEl) {
+    catName = titleEl.textContent.replace(/[^\u0590-\u05FFa-zA-Z0-9 ]/g,'').trim();
+  }
+  var key = 'order_' + catName.replace(/[^\u0590-\u05FFa-zA-Z0-9]/g,'_');
+  dbGet('/' + key, function(orderStr) {
+    if (!orderStr) { callback(); return; }
+    var ids = orderStr.split(',');
+    ids.forEach(function(id) {
+      var el = sec.querySelector('[data-fbkey="'+id+'"]') || document.getElementById(id);
+      if (el) sec.appendChild(el);
+    });
+    callback();
+  });
 }
 
 // ── Stats ─────────────────────────────────────────────────────────────────────
@@ -661,6 +733,7 @@ function toggleAdmin() {
       var btn = document.getElementById('adminToggleBtn');
       if(btn){ btn.classList.remove('active'); btn.textContent='🔐 ניהול'; }
       showToast('יצאת ממצב ניהול');
+      destroyDragDrop();
     });
   } else {
     var provider = new firebase.auth.GoogleAuthProvider();
@@ -680,6 +753,7 @@ function toggleAdmin() {
       if(btn){ btn.classList.add('active'); btn.textContent='🔓 יציאה'; }
       showToast('מצב ניהול פעיל ✅');
       loadPendingBadge();
+      initDragDrop();
     }).catch(function(err) {
       showToast('כניסה נכשלה: ' + err.message);
     });
