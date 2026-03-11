@@ -227,7 +227,7 @@ body.admin-active .admin-only{display:inline-flex;}
   <h1>📖 ספר המתכונים של יניב</h1>
   <p>מתכונים משפחתיים שעוברים מדור לדור</p>
   <div class="stats">
-    <div class="stat"><span class="stat-num" id="stat-recipes">86</span><span class="stat-label">מתכונים</span></div>
+    <div class="stat"><span class="stat-num" id="stat-recipes">83</span><span class="stat-label">מתכונים</span></div>
     <div class="stat"><span class="stat-num" id="stat-cats">11</span><span class="stat-label">קטגוריות</span></div>
     <div class="stat"><span class="stat-num" id="stat-authors">10</span><span class="stat-label">טבחים</span></div>
   </div>
@@ -607,6 +607,9 @@ function addRecipeToPage(r) {
     '</div>';
 
   sec.appendChild(el);
+  // עדכן ספירה מיידית
+  var sr = document.getElementById('stat-recipes');
+  if (sr) sr.textContent = document.querySelectorAll('.cloud-recipe').length;
 }
 
 // ── Stats ─────────────────────────────────────────────────────────────────────
