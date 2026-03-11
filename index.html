@@ -332,6 +332,20 @@ body.admin-active .admin-only{display:inline-flex;}
   <div class="modal">
     <h3>✏️ עריכת מתכון</h3>
     <label>שם המתכון</label><input id="eName" type="text">
+    <label>קטגוריה</label>
+    <select id="eCat" style="width:100%;padding:8px 12px;border:1.5px solid #ddd;border-radius:10px;font-size:.95rem;font-family:inherit;margin-bottom:4px;">
+      <option value="חמוצים וכבושים">חמוצים וכבושים</option>
+      <option value="סלטים ורטבים">סלטים ורטבים</option>
+      <option value="מרקים">מרקים</option>
+      <option value="עוף ובשר">עוף ובשר</option>
+      <option value="דגים">דגים</option>
+      <option value="פשטידות וירקות">פשטידות וירקות</option>
+      <option value="פסטה ואורז">פסטה ואורז</option>
+      <option value="לחמים ומאפים">לחמים ומאפים</option>
+      <option value="עוגות וקינוחים">עוגות וקינוחים</option>
+      <option value="עוגיות וחטיפים">עוגיות וחטיפים</option>
+      <option value="שתייה">שתייה</option>
+    </select>
     <label>שף / מי הכין</label><input id="eBy" type="text">
     <label>זמן הכנה (לדוגמה: 30 דקות, שעה)</label><input id="eTime" type="text">
     <label>תיאור</label><textarea id="eDesc" rows="2"></textarea>
@@ -821,6 +835,7 @@ function openEdit(id) {
   }
   var timeSpan = el.querySelector('.meta span:nth-child(2)');
   document.getElementById('eName').value = nameEl ? nameEl.textContent.trim() : '';
+  document.getElementById('eCat').value = el.getAttribute('data-cat') || '';
   document.getElementById('eBy').value   = byEl   ? byEl.textContent.replace('✦ ','').trim() : '';
   document.getElementById('eTime').value = timeSpan ? timeSpan.textContent.replace('⏱ ','').trim() : '';
   document.getElementById('eDesc').value = descEl ? descEl.textContent.trim() : '';
@@ -848,7 +863,7 @@ function saveEdit() {
   var updated = {
     originalId:  editingId,
     name:        document.getElementById('eName').value.trim(),
-    cat:         cat,
+    cat:         document.getElementById('eCat').value || cat,
     emoji:       emojiEl ? emojiEl.textContent.trim() : '🍽️',
     by:          document.getElementById('eBy').value.trim(),
     time:        document.getElementById('eTime').value.trim(),
