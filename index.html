@@ -2,6 +2,12 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
+<meta property="og:site_name" content="ספר המתכונים של יניב">
+<meta property="og:type" content="website">
+<meta property="og:title" id="og-title" content="ספר המתכונים של יניב">
+<meta property="og:description" id="og-desc" content="מתכונים משפחתיים שעוברים מדור לדור">
+<meta property="og:url" id="og-url" content="https://yanivvip.github.io/YK-recipe-book">
+<meta property="og:image" content="https://yanivvip.github.io/YK-recipe-book/preview.jpg">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -888,15 +894,24 @@ function shareRecipe(btn) {
   if (!det) return;
   var name = det.querySelector('.recipe-name') ? det.querySelector('.recipe-name').textContent.trim() : '';
   var by   = det.querySelector('.by') ? det.querySelector('.by').textContent.replace('✦ ','').trim() : '';
+  var desc = det.querySelector('.recipe-desc') ? det.querySelector('.recipe-desc').textContent.trim() : '';
   var recipeId = det.id || '';
   var baseUrl = 'https://yanivvip.github.io/YK-recipe-book';
-  // ?recipe=ID עובד בפייסבוק, #anchor לא
   var url = recipeId ? baseUrl + '?recipe=' + encodeURIComponent(recipeId) : baseUrl;
+
+  // עדכן meta tags כדי שפייסבוק יראה את שם המתכון
+  var ogTitle = name + (by ? ' — מתכון של ' + by : '') + ' | ספר המתכונים של יניב';
+  var ogDesc = desc || (by ? 'מתכון של ' + by + ' מתוך ספר המתכונים של יניב' : 'מתוך ספר המתכונים של יניב');
+  document.getElementById('og-title').setAttribute('content', ogTitle);
+  document.getElementById('og-desc').setAttribute('content', ogDesc);
+  document.getElementById('og-url').setAttribute('content', url);
+  document.title = ogTitle;
+
   var text = '🍽️ ' + name;
   if (by) text += ' - מתכון של ' + by;
   text += '\n\nמתוך ספר המתכונים של יניב 📖\n' + url;
   if (navigator.share) {
-    navigator.share({ title: name, text: text, url: url });
+    navigator.share({ title: ogTitle, text: text, url: url });
   } else {
     window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
   }
