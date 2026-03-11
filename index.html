@@ -8,6 +8,7 @@
 <meta property="og:description" id="og-desc" content="מתכונים משפחתיים שעוברים מדור לדור">
 <meta property="og:url" id="og-url" content="https://yanivvip.github.io/YK-recipe-book">
 <meta property="og:image" content="https://yanivvip.github.io/YK-recipe-book/preview.jpg">
+<link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -262,7 +263,7 @@ body.admin-active .admin-only{display:inline-flex;}
   position: relative;
   border-radius: 20px;
   overflow: hidden;
-  min-height: 420px;
+  min-height: 600px;
   display: flex;
   align-items: stretch;
   box-shadow: 0 8px 32px rgba(0,0,0,0.18);
@@ -276,7 +277,7 @@ body.admin-active .admin-only{display:inline-flex;}
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 30%;
+  object-position: center 15%;
   display: block;
   filter: brightness(0.55);
 }
@@ -285,28 +286,31 @@ body.admin-active .admin-only{display:inline-flex;}
   z-index: 2;
   padding: 40px 40px 36px;
   color: #fff;
-  line-height: 1.85;
-  font-size: 1.05rem;
-  max-width: 580px;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  line-height: 2;
+  font-size: 1.08rem;
+  font-family: 'Varela Round', 'Assistant', sans-serif;
+  max-width: 600px;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.6);
   display: flex;
   flex-direction: column;
   justify-content: center;
+  letter-spacing: 0.01em;
 }
 .outro-text p { margin-bottom: 10px; }
 .outro-text p:last-child { margin-bottom: 0; }
 .outro-text strong { color: #a8e6c5; }
 .book-outro-closing {
   margin-top: 20px !important;
-  font-size: 1.2rem !important;
+  font-size: 1.15rem !important;
   font-weight: 700;
   color: #fff !important;
+  font-style: italic;
 }
 .book-outro-closing strong { color: #a8e6c5 !important; }
 
 @media(max-width:600px) {
   .book-intro-inner { padding: 20px 18px; font-size: 0.93rem; }
-  .book-outro-inner { min-height: 520px; }
+  .book-outro-inner { min-height: 700px; }
   .outro-text { padding: 28px 20px; font-size: 0.93rem; }
   .outro-family-photo { object-position: center center; }
 }
@@ -510,13 +514,12 @@ body.admin-active .admin-only{display:inline-flex;}
       <div class="outro-photo-overlay"></div>
     </div>
     <div class="outro-text">
-      <p>כמובן שהאינטרנט מלא במתכונים שונים ומגוונים על כל מאכל ותבשיל אבל כאן אני כתבתי מתכונים ל<strong>אוכל של בית! אוכל של אמא!</strong></p>
-      <p>אותו אוכל שהייתי מריח מתחילת הרחוב שהייתי חוזר מבית הספר.</p>
-      <p>אותו אוכל שהיה מקבץ את כל המשפחה בערב שישי או בצהרי שבת לארוחה משפחתית.</p>
-      <p>זו המהות האמתית של אוכל לדעתי, <strong>המשפחה!</strong></p>
-      <p>כי המשפחה שלנו, בסופו של יום, היא הדבר החשוב לנו מכל!<br>
-      אנחנו חייבים לשמור על המשפחה ולדאוג לה ואם אפשר על הדרך לפנק בן משפחה באיזה מאכל שהוא או היא אוהבים אז אני אומר- למה לא?</p>
-      <p class="book-outro-closing">אז לכו לבשל, <strong>ושיהיה לכם בתאבון!</strong> 🍽️</p>
+      <p>בעולם יש אינספור מתכונים, ספרים ואתרי אוכל מכל הסוגים, אבל כאן רציתי לכתוב משהו אחר. <strong>אוכל של בית. אוכל של אמא.</strong></p>
+      <p>האוכל שהריח שלו היה ממלא את הרחוב כשחזרתי מבית הספר. האוכל שכבר מהדלת גרם לך לדעת שמישהו בבית חיכה לך באהבה.</p>
+      <p>זה האוכל שהיה מאחד את כולנו סביב השולחן, בערב שישי, בצהרי שבת. רגעים פשוטים של משפחה, צחוק ושיחות שנמשכות שעות כשאנחנו עוד ״נוברים״...</p>
+      <p>בעיניי זו המהות האמיתית של אוכל. לא רק הטעם, אלא <strong>המשפחה שמתקבצת ואוכלת יחד.</strong></p>
+      <p>כי בסופו של דבר המשפחה שלנו היא הדבר היקר ביותר שיש לנו. חשוב לשמור עליה, לטפח אותה ולפעמים גם לפנק במנה שמישהו אוהב במיוחד.</p>
+      <p class="book-outro-closing">אז לכו לבשל באהבה. תזמינו את מי שאתם אוהבים לשולחן ותהנו מכל רגע. 🍽️</p>
     </div>
   </div>
 </section>
