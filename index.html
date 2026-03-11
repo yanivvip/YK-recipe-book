@@ -466,20 +466,16 @@ addEventListener('load', function() {
       document.querySelectorAll('details.recipe[open]').forEach(function(d) {
         if (d !== e.target) d.removeAttribute('open');
       });
-      // גלול אוטומטי למתכון
-      setTimeout(function() {
+      // גלול אוטומטי למתכון - מחכה שה-details יתרחב
+      function doScroll() {
         var el = e.target;
         var isMobile = window.innerWidth <= 600;
-        if (isMobile) {
-          var top = el.getBoundingClientRect().top + window.scrollY - 8;
-          window.scrollTo({ top: top, behavior: 'smooth' });
-        } else {
-          var rect = el.getBoundingClientRect();
-          var elCenter = rect.top + rect.height / 2 + window.scrollY;
-          var viewCenter = window.innerHeight / 2;
-          window.scrollTo({ top: elCenter - viewCenter, behavior: 'smooth' });
-        }
-      }, 50);
+        var offset = isMobile ? 8 : 70;
+        var top = el.getBoundingClientRect().top + window.scrollY - offset;
+        window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+      }
+      setTimeout(doScroll, 50);
+      setTimeout(doScroll, 300);
     }
   }, true);
 
@@ -487,9 +483,16 @@ addEventListener('load', function() {
 
   // פתח מתכון ספציפי אם יש anchor בURL
   function openRecipeFromHash() {
-    var hash = decodeURIComponent(window.location.hash.replace('#',''));
-    if (!hash) return;
-    var el = document.getElementById(hash);
+    // תמיכה בשני פורמטים: ?recipe=ID (פייסבוק) ו-#ID (ווצאפ/ישיר)
+    var recipeId = '';
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('recipe')) {
+      recipeId = decodeURIComponent(params.get('recipe'));
+    } else {
+      recipeId = decodeURIComponent(window.location.hash.replace('#',''));
+    }
+    if (!recipeId) return;
+    var el = document.getElementById(recipeId);
     if (el && el.tagName === 'DETAILS') {
       el.open = true;
       setTimeout(function() {
@@ -887,7 +890,8 @@ function shareRecipe(btn) {
   var by   = det.querySelector('.by') ? det.querySelector('.by').textContent.replace('✦ ','').trim() : '';
   var recipeId = det.id || '';
   var baseUrl = 'https://yanivvip.github.io/YK-recipe-book';
-  var url = recipeId ? baseUrl + '#' + encodeURIComponent(recipeId) : baseUrl;
+  // ?recipe=ID עובד בפייסבוק, #anchor לא
+  var url = recipeId ? baseUrl + '?recipe=' + encodeURIComponent(recipeId) : baseUrl;
   var text = '🍽️ ' + name;
   if (by) text += ' - מתכון של ' + by;
   text += '\n\nמתוך ספר המתכונים של יניב 📖\n' + url;
