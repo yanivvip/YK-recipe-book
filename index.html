@@ -606,6 +606,12 @@ function toggleAdmin() {
     firebase.auth().signInWithPopup(provider).then(function(result) {
       return result.user.getIdToken();
     }).then(function(token) {
+      var email = firebase.auth().currentUser ? firebase.auth().currentUser.email : '';
+      if (email !== 'yaniv.vip@gmail.com') {
+        firebase.auth().signOut();
+        showToast('אין הרשאת ניהול ❌');
+        return;
+      }
       authToken = token;
       adminMode = true;
       document.body.classList.add('admin-active');
