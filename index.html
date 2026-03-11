@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
 <script>
   firebase.initializeApp({
     apiKey: "AIzaSyB4V1zI64gfZkv5vxr3cn28rcL4BAZrHAU",
@@ -294,18 +296,17 @@ body.admin-active .admin-only{display:inline-flex;}
 <div id="adminBar" class="admin-bar">🔓 מצב ניהול פעיל — לחץ על ✏️ לעריכה או 🗑️ למחיקה</div>
 <div id="cloudBanner"></div>
 <nav class="cat-nav">
-<a href="#חמוצים_וכבושים" class="cat-link" data-cat="חמוצים וכבושים">חמוצים וכבושים <span class="cnt">0</span></a>
-<a href="#סלטים_ורטבים" class="cat-link" data-cat="סלטים ורטבים">סלטים ורטבים <span class="cnt">0</span></a>
-<a href="#מרקים" class="cat-link" data-cat="מרקים">מרקים <span class="cnt">0</span></a>
-<a href="#עוף_ובשר" class="cat-link" data-cat="עוף ובשר">עוף ובשר <span class="cnt">0</span></a>
-<a href="#דגים" class="cat-link" data-cat="דגים">דגים <span class="cnt">0</span></a>
-<a href="#פשטידות_וירקות" class="cat-link" data-cat="פשטידות וירקות">פשטידות וירקות <span class="cnt">0</span></a>
-<a href="#פסטה_ואורז" class="cat-link" data-cat="פסטה ואורז">פסטה ואורז <span class="cnt">0</span></a>
-<a href="#לחמים_ומאפים" class="cat-link" data-cat="לחמים ומאפים">לחמים ומאפים <span class="cnt">0</span></a>
-<a href="#עוגות_וקינוחים" class="cat-link" data-cat="עוגות וקינוחים">עוגות וקינוחים <span class="cnt">0</span></a>
-<a href="#עוגיות_וחטיפים" class="cat-link" data-cat="עוגיות וחטיפים">עוגיות וחטיפים <span class="cnt">0</span></a>
-<a href="#שתייה" class="cat-link" data-cat="שתייה">שתייה <span class="cnt">0</span></a>
-
+<a href="javascript:void(0)" class="cat-link" data-cat="חמוצים וכבושים" onclick="scrollToCat('חמוצים וכבושים')">חמוצים וכבושים <span class="cnt">0</span></a>
+<a href="javascript:void(0)" class="cat-link" data-cat="סלטים ורטבים" onclick="scrollToCat('סלטים ורטבים')">סלטים ורטבים <span class="cnt">0</span></a>
+<a href="javascript:void(0)" class="cat-link" data-cat="מרקים" onclick="scrollToCat('מרקים')">מרקים <span class="cnt">0</span></a>
+<a href="javascript:void(0)" class="cat-link" data-cat="עוף ובשר" onclick="scrollToCat('עוף ובשר')">עוף ובשר <span class="cnt">0</span></a>
+<a href="javascript:void(0)" class="cat-link" data-cat="דגים" onclick="scrollToCat('דגים')">דגים <span class="cnt">0</span></a>
+<a href="javascript:void(0)" class="cat-link" data-cat="פשטידות וירקות" onclick="scrollToCat('פשטידות וירקות')">פשטידות וירקות <span class="cnt">0</span></a>
+<a href="javascript:void(0)" class="cat-link" data-cat="פסטה ואורז" onclick="scrollToCat('פסטה ואורז')">פסטה ואורז <span class="cnt">0</span></a>
+<a href="javascript:void(0)" class="cat-link" data-cat="לחמים ומאפים" onclick="scrollToCat('לחמים ומאפים')">לחמים ומאפים <span class="cnt">0</span></a>
+<a href="javascript:void(0)" class="cat-link" data-cat="עוגות וקינוחים" onclick="scrollToCat('עוגות וקינוחים')">עוגות וקינוחים <span class="cnt">0</span></a>
+<a href="javascript:void(0)" class="cat-link" data-cat="עוגיות וחטיפים" onclick="scrollToCat('עוגיות וחטיפים')">עוגיות וחטיפים <span class="cnt">0</span></a>
+<a href="javascript:void(0)" class="cat-link" data-cat="שתייה" onclick="scrollToCat('שתייה')">שתייה <span class="cnt">0</span></a>
 </nav>
 
 
@@ -433,9 +434,31 @@ function migrateIfNeeded() {
   });
 }
 
-window.addEventListener('load', function() {
+function scrollToCat(catName) {
+  var secId = 'sec-' + catName.replace(/[^\u0590-\u05FFa-zA-Z0-9]/g,'-');
+  var sec = document.getElementById(secId);
+  if (sec) {
+    sec.scrollIntoView({behavior:'smooth', block:'start'});
+    // הדגש את הכפתור הנבחר
+    document.querySelectorAll('.cat-link').forEach(function(a){ a.classList.remove('active'); });
+    var btn = document.querySelector('.cat-link[data-cat="' + catName + '"]');
+    if (btn) btn.classList.add('active');
+  }
+}
+
+addEventListener('load', function() {
   document.querySelectorAll('.cat-count').forEach(function(el){ el.textContent='(0)'; });
   migrateIfNeeded();
+
+  // סגור מתכון אחר בעת פתיחת חדש
+  document.getElementById('mainContent').addEventListener('toggle', function(e) {
+    if (e.target.tagName === 'DETAILS' && e.target.open) {
+      document.querySelectorAll('details.recipe[open]').forEach(function(d) {
+        if (d !== e.target) d.removeAttribute('open');
+      });
+    }
+  }, true);
+
   loadPendingBadge();
 });
 
@@ -595,8 +618,6 @@ function toggleAdmin() {
     });
   }
 }
-
-/* checkPassword הוסר - משתמשים ב-Google Auth */
 
 function closePw() {
   var o=document.getElementById('pwOverlay'); if(o) o.style.display='none';
