@@ -490,13 +490,7 @@ addEventListener('load', function() {
   // פתח מתכון ספציפי אם יש anchor בURL
   function openRecipeFromHash() {
     // תמיכה בשני פורמטים: ?recipe=ID (פייסבוק) ו-#ID (ווצאפ/ישיר)
-    var recipeId = '';
-    var params = new URLSearchParams(window.location.search);
-    if (params.get('recipe')) {
-      recipeId = decodeURIComponent(params.get('recipe'));
-    } else {
-      recipeId = decodeURIComponent(window.location.hash.replace('#',''));
-    }
+    var recipeId = decodeURIComponent(window.location.hash.replace('#',''));
     if (!recipeId) return;
     var el = document.getElementById(recipeId);
     if (el && el.tagName === 'DETAILS') {
@@ -897,7 +891,7 @@ function shareRecipe(btn) {
   var desc = det.querySelector('.recipe-desc') ? det.querySelector('.recipe-desc').textContent.trim() : '';
   var recipeId = det.id || '';
   var baseUrl = 'https://yanivvip.github.io/YK-recipe-book';
-  var url = recipeId ? baseUrl + '?recipe=' + encodeURIComponent(recipeId) : baseUrl;
+  var url = recipeId ? baseUrl + '/#' + encodeURIComponent(recipeId) : baseUrl;
 
   // עדכן meta tags כדי שפייסבוק יראה את שם המתכון
   var ogTitle = name + (by ? ' — מתכון של ' + by : '') + ' | ספר המתכונים של יניב';
