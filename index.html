@@ -1331,19 +1331,42 @@ function normalizeRecipeEmojis() {
 
   window.addEventListener('load', function() {
     normalizeRecipeEmojis();
-    setTimeout(normalizeRecipeEmojis, 500);
-    setTimeout(normalizeRecipeEmojis, 1500);
+    setTimeout(normalizeRecipeEmojis, 300);
+    setTimeout(normalizeRecipeEmojis, 900);
+
     var main = document.getElementById('mainContent');
     if (main && window.MutationObserver) {
-      new MutationObserver(function() { normalizeRecipeEmojis(); }).observe(main, {childList:true, subtree:true});
+      var normalizeTimer = null;
+      new MutationObserver(function(mutations) {
+        var shouldNormalize = mutations.some(function(m) { return m.addedNodes && m.addedNodes.length; });
+        if (!shouldNormalize) return;
+        if (normalizeTimer) clearTimeout(normalizeTimer);
+        normalizeTimer = setTimeout(function() { normalizeRecipeEmojis(main); }, 50);
+      }).observe(main, {childList:true, subtree:true});
     }
+
     var f = document.getElementById('f_emoji');
-    if (f && f.parentElement) f.parentElement.remove();
+    if (f) {
+      var fieldWrap = f.closest('.field, .form-row, .input-group, div');
+      if (fieldWrap && fieldWrap !== document.body) {
+        fieldWrap.remove();
+      } else if (f.parentElement) {
+        f.parentElement.remove();
+      } else {
+        f.remove();
+      }
+    }
+
     var s = document.getElementById('sEmoji');
     if (s) {
-      var label = s.previousElementSibling;
-      if (label && label.tagName === 'LABEL') label.remove();
-      s.remove();
+      var sWrap = s.closest('.field, .form-row, .input-group, div');
+      if (sWrap && sWrap !== document.body) {
+        sWrap.remove();
+      } else if (s.parentElement) {
+        s.parentElement.remove();
+      } else {
+        s.remove();
+      }
     }
   });
 })();
