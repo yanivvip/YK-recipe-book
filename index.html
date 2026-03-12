@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 
 <!-- saved from url=(0042)https://yanivvip.github.io/YK-recipe-book/ -->
-<html dir="rtl" lang="he"><script async="" src="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/cb=gapi.loaded_0"></script><script src="chrome-extension://neigoggljhfnodeneidndcflnclldnpm/content.js"></script><head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<html dir="rtl" lang="he"><head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
 <meta content="ספר המתכונים של יניב" property="og:site_name"/>
 <meta content="website" property="og:type"/>
 <meta content="מרק עגבניות עם אורז — מתכון של אמא | ספר המתכונים של יניב" id="og-title" property="og:title"/>
 <meta content="מרק עגבניות פשוט עם אורז, מתאים לכל גיל" id="og-desc" property="og:description"/>
 <meta content="https://yanivvip.github.io/YK-recipe-book/#recipe-9" id="og-url" property="og:url"/>
 <meta content="https://yanivvip.github.io/YK-recipe-book/preview.jpg" property="og:image"/>
-<link href="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/css2" rel="stylesheet"/>
-<script src="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/Sortable.min.js.download"></script>
-<script src="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/firebase-app-compat.js.download"></script>
-<script src="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/firebase-auth-compat.js.download"></script>
-<script src="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/firebase-database-compat.js.download"></script>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
   firebase.initializeApp({
     apiKey: "AIzaSyB4V1zI64gfZkv5vxr3cn28rcL4BAZrHAU",
@@ -318,7 +318,7 @@ body.admin-active .admin-only{display:inline-flex;}
 }
 
 </style>
-<script charset="UTF-8" gapi_processed="true" src="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/api.js.download" type="text/javascript"></script><script charset="UTF-8" gapi_processed="true" src="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/api(1).js.download" type="text/javascript"></script></head>
+</head>
 <body class="" style="">
 <header class="site-header">
 <div class="author-box">
@@ -965,7 +965,54 @@ function exportAll() {
     '.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;}' +
     '.page-break{page-break-after:always;}' +
     '.action-btns,.toggle-icon,.emoji{display:none!important;}' +
-    '</style></head><body>' + allHTML + '</body></html>';
+    '</style></head><body>' + allHTML + '
+<script>
+(function(){
+  function byId(id){ return document.getElementById(id); }
+  function hide(id){ var el=byId(id); if(el) el.style.display='none'; }
+  function show(id){ var el=byId(id); if(el) el.style.display='flex'; }
+
+  window.closeSuggestForm = function(){ hide('suggestOverlay'); };
+  window.openSuggestForm = function(){ show('suggestOverlay'); };
+  window.closeForm = function(){ hide('formOverlay'); hide('suggestOverlay'); };
+  window.openForm = function(){ show('suggestOverlay'); };
+  window.submitForm = function(){
+    if (typeof window.submitSuggest === 'function') return window.submitSuggest();
+    if (typeof window.showToast === 'function') window.showToast('טופס השליחה אינו זמין כרגע');
+  };
+
+  document.addEventListener('DOMContentLoaded', function(){
+    var adminBtn = byId('adminToggleBtn');
+    if (adminBtn) {
+      adminBtn.setAttribute('type','button');
+      adminBtn.onclick = function(ev){
+        if (ev) ev.preventDefault();
+        if (typeof window.toggleAdmin === 'function') return window.toggleAdmin();
+      };
+    }
+
+    var addBtns = document.querySelectorAll('[onclick*="openForm"], [onclick*="openSuggestForm"]');
+    addBtns.forEach(function(btn){
+      btn.setAttribute('type','button');
+      btn.onclick = function(ev){ if(ev) ev.preventDefault(); window.openSuggestForm(); };
+    });
+
+    var cancelBtns = document.querySelectorAll('[onclick*="closeForm"], [onclick*="closeSuggestForm"]');
+    cancelBtns.forEach(function(btn){
+      btn.setAttribute('type','button');
+      btn.onclick = function(ev){ if(ev) ev.preventDefault(); window.closeSuggestForm(); };
+    });
+
+    var submitBtns = document.querySelectorAll('[onclick*="submitForm"], [onclick*="submitSuggest"]');
+    submitBtns.forEach(function(btn){
+      btn.setAttribute('type','button');
+      btn.onclick = function(ev){ if(ev) ev.preventDefault(); window.submitForm(); };
+    });
+  });
+})();
+</script>
+
+</body></html>';
   var old = document.getElementById('_printAllFrame');
   if (old) old.remove();
   var frame = document.createElement('iframe');
@@ -1009,7 +1056,54 @@ function printOne(id) {
       '<div class="print-title"><h1>' + name + '</h1>' +
       '<div class="meta-line">✦ ' + by + ' &nbsp;|&nbsp; ' + time + '</div></div>' +
       '<div class="print-photo"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wgARCAS7BJIDASIAAhEBAxEB/8QAGgABAQEBAQEBAAAAAAAAAAAAAAECAwQFBv/EABgBAQEBAQEAAAAAAAAAAAAAAAABAgME/9oADAMBAAIQAxAAAAL6Bd5CgRZVlIAKIqggAAoAAFJQAAAAKIsCiKIoAAASiKIQrPI7Z8uJfa+fD6M8NPc8tPVfNpPReO62zoAAAAAAAAAAAAAAAgEoAgAQFSrIAAJYqyKIogIAAABKIoCUUlAABZQAAAAEoUACgAAFJUFAAAAAAAAQWAxxO3n4ebN7c/NnOuvOXNlUEN9OGq9U89T1dfFqvo9Pnd9Z9m/NvU9Dn0CCgsogCiAAALAAAACLAABKJQSwACyKlirIUgAIACAssAEogKVQAgCgAAAFJQAFIoigAAoAAAAKJQiwLAAAz5T0+fy+POvR5uOMXrialiwAFFQ3eVOjNXeuWk3vlqvT6fmddZ+h38/XWdb4yvTeHU3MjSUqCgAAJSKIAAACKIKCAAIAALAAIACKIAACAAAUUEBVlAgAAsKABQAAALACgAAAAWUAAiiAnCeCXv4+OcauLnN1MUFM6ozjrDnemBeOjrlSW8zvOfUGTrrlT1+35Xq3n2+Lfms+h6vF2s7zx6r0zjg9mvF2PQ49S2CgAAAlCUIAACUAIsIoiiBAUCKqLEASiAAAiwAoUIKAABQAABQAAAqUAAAAWCglAAABAnB8bN7ebmxvWbYxZlbNQihoKxQ3Uxz2OXSDedU49eY7QVrn0R08+q73zdrO3fydE9+vFrU9bzbrs57s6uXc6a8/Y0AAAAACLAUlQLAABLACBAUESyqCLACAAASiKKAJQABQAACgFIollAAACwKIoihAoAABB5u3yJfPy3nnuamZbgMzqTnd4LMaHTGl1z6047ouLpebpUzbDHPtg1mwdMVOe+dq9fPs9GuGo6sDWuUr2dvn9dZ+h6vzf3947DUAAWUAiwASwFIUEAAEoiiLBLAAASgIqSFqAolKJQ"></div>' +
-    '</div>' + body + '</body></html>';
+    '</div>' + body + '
+<script>
+(function(){
+  function byId(id){ return document.getElementById(id); }
+  function hide(id){ var el=byId(id); if(el) el.style.display='none'; }
+  function show(id){ var el=byId(id); if(el) el.style.display='flex'; }
+
+  window.closeSuggestForm = function(){ hide('suggestOverlay'); };
+  window.openSuggestForm = function(){ show('suggestOverlay'); };
+  window.closeForm = function(){ hide('formOverlay'); hide('suggestOverlay'); };
+  window.openForm = function(){ show('suggestOverlay'); };
+  window.submitForm = function(){
+    if (typeof window.submitSuggest === 'function') return window.submitSuggest();
+    if (typeof window.showToast === 'function') window.showToast('טופס השליחה אינו זמין כרגע');
+  };
+
+  document.addEventListener('DOMContentLoaded', function(){
+    var adminBtn = byId('adminToggleBtn');
+    if (adminBtn) {
+      adminBtn.setAttribute('type','button');
+      adminBtn.onclick = function(ev){
+        if (ev) ev.preventDefault();
+        if (typeof window.toggleAdmin === 'function') return window.toggleAdmin();
+      };
+    }
+
+    var addBtns = document.querySelectorAll('[onclick*="openForm"], [onclick*="openSuggestForm"]');
+    addBtns.forEach(function(btn){
+      btn.setAttribute('type','button');
+      btn.onclick = function(ev){ if(ev) ev.preventDefault(); window.openSuggestForm(); };
+    });
+
+    var cancelBtns = document.querySelectorAll('[onclick*="closeForm"], [onclick*="closeSuggestForm"]');
+    cancelBtns.forEach(function(btn){
+      btn.setAttribute('type','button');
+      btn.onclick = function(ev){ if(ev) ev.preventDefault(); window.closeSuggestForm(); };
+    });
+
+    var submitBtns = document.querySelectorAll('[onclick*="submitForm"], [onclick*="submitSuggest"]');
+    submitBtns.forEach(function(btn){
+      btn.setAttribute('type','button');
+      btn.onclick = function(ev){ if(ev) ev.preventDefault(); window.submitForm(); };
+    });
+  });
+})();
+</script>
+
+</body></html>';
 
   var old = document.getElementById('_printOneFrame');
   if (old) old.remove();
@@ -1039,7 +1133,7 @@ function clearForm(prefix) {
 }
 
 </script>
-<iframe aria-hidden="true" frameborder="0" hspace="0" id="I0_1773251361737" marginheight="0" marginwidth="0" name="I0_1773251361737" ng-non-bindable="" scrolling="no" src="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/iframe.html" style="position: absolute; top: -100px; width: 1px; height: 1px;" tabindex="-1" vspace="0" width="100%"></iframe><iframe aria-hidden="true" frameborder="0" hspace="0" id="I0_1773306492348" marginheight="0" marginwidth="0" name="I0_1773306492348" ng-non-bindable="" scrolling="no" src="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/iframe(1).html" style="position: absolute; top: -100px; width: 1px; height: 1px;" tabindex="-1" vspace="0" width="100%"></iframe><iframe id="_printFrame" src="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/saved_resource.html" style="position: fixed; top: -9999px; left: -9999px; width: 1px; height: 1px; border: none;"></iframe><iframe id="_printAllFrame" src="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/saved_resource(1).html" style="position: fixed; top: -9999px; left: -9999px; width: 1px; height: 1px; border: none;"></iframe>
+<iframe id="_printFrame" src="about:blank" style="position: fixed; top: -9999px; left: -9999px; width: 1px; height: 1px; border: none;"></iframe><iframe id="_printAllFrame" src="about:blank" style="position: fixed; top: -9999px; left: -9999px; width: 1px; height: 1px; border: none;"></iframe>
 <script>
 function getCategoryEmoji(catName) {
   var clean = (catName || '').replace(/[‎‏]/g, '').replace(/\s+/g, ' ').trim();
@@ -1187,4 +1281,51 @@ function removeEmojiFields() {
 window.addEventListener('afterprint', function() { try { document.title = 'ספר המתכונים של יניב'; } catch(e) {} });
 try { document.title = 'ספר המתכונים של יניב'; } catch(e) {}
 </script>
+
+<script>
+(function(){
+  function byId(id){ return document.getElementById(id); }
+  function hide(id){ var el=byId(id); if(el) el.style.display='none'; }
+  function show(id){ var el=byId(id); if(el) el.style.display='flex'; }
+
+  window.closeSuggestForm = function(){ hide('suggestOverlay'); };
+  window.openSuggestForm = function(){ show('suggestOverlay'); };
+  window.closeForm = function(){ hide('formOverlay'); hide('suggestOverlay'); };
+  window.openForm = function(){ show('suggestOverlay'); };
+  window.submitForm = function(){
+    if (typeof window.submitSuggest === 'function') return window.submitSuggest();
+    if (typeof window.showToast === 'function') window.showToast('טופס השליחה אינו זמין כרגע');
+  };
+
+  document.addEventListener('DOMContentLoaded', function(){
+    var adminBtn = byId('adminToggleBtn');
+    if (adminBtn) {
+      adminBtn.setAttribute('type','button');
+      adminBtn.onclick = function(ev){
+        if (ev) ev.preventDefault();
+        if (typeof window.toggleAdmin === 'function') return window.toggleAdmin();
+      };
+    }
+
+    var addBtns = document.querySelectorAll('[onclick*="openForm"], [onclick*="openSuggestForm"]');
+    addBtns.forEach(function(btn){
+      btn.setAttribute('type','button');
+      btn.onclick = function(ev){ if(ev) ev.preventDefault(); window.openSuggestForm(); };
+    });
+
+    var cancelBtns = document.querySelectorAll('[onclick*="closeForm"], [onclick*="closeSuggestForm"]');
+    cancelBtns.forEach(function(btn){
+      btn.setAttribute('type','button');
+      btn.onclick = function(ev){ if(ev) ev.preventDefault(); window.closeSuggestForm(); };
+    });
+
+    var submitBtns = document.querySelectorAll('[onclick*="submitForm"], [onclick*="submitSuggest"]');
+    submitBtns.forEach(function(btn){
+      btn.setAttribute('type','button');
+      btn.onclick = function(ev){ if(ev) ev.preventDefault(); window.submitForm(); };
+    });
+  });
+})();
+</script>
+
 </body></html>
