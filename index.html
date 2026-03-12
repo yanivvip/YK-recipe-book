@@ -360,7 +360,7 @@ body.admin-active .admin-only{display:inline-flex;}
       </div>
       <div>
         <label style="font-size:.8rem; color:#888; display:block; margin-bottom:4px;">קטגוריה *</label>
-        <select id="f_cat" style="width:100%; padding:9px 12px; border:1.5px solid #ccc; border-radius:8px; font-size:.9rem; font-family:inherit; outline:none; background:#fff;">
+        <select id="f_cat" onchange="autoEmoji(this.value)" style="width:100%; padding:9px 12px; border:1.5px solid #ccc; border-radius:8px; font-size:.9rem; font-family:inherit; outline:none; background:#fff;">
           <option value="">בחר קטגוריה</option>
           <option>חמוצים וכבושים</option><option>סלטים ורטבים</option><option>מרקים</option>
           <option>עוף ובשר</option><option>דגים</option><option>פשטידות וירקות</option>
@@ -368,7 +368,10 @@ body.admin-active .admin-only{display:inline-flex;}
           <option>עוגיות וחטיפים</option><option>שתייה</option>
         </select>
       </div>
-
+      <div>
+        <label style="font-size:.8rem; color:#888; display:block; margin-bottom:4px;">אמוג'י</label>
+        <input id="f_emoji" type="text" placeholder="🍲" maxlength="2" style="width:100%; padding:9px 12px; border:1.5px solid #ccc; border-radius:8px; font-size:1.2rem; font-family:inherit; outline:none;">
+      </div>
       <div>
         <label style="font-size:.8rem; color:#888; display:block; margin-bottom:4px;">מי מכין?</label>
         <input id="f_by" type="text" placeholder="שם הטבח/ית" style="width:100%; padding:9px 12px; border:1.5px solid #ccc; border-radius:8px; font-size:.9rem; font-family:inherit; outline:none;">
@@ -474,6 +477,7 @@ body.admin-active .admin-only{display:inline-flex;}
       <option>עוגיות וחטיפים</option><option>שתייה</option>
     </select>
     <label>שם השף / מי הכין *</label><input id="sBy" type="text">
+    <label>אמוג'י (אופציונלי)</label><input id="sEmoji" type="text" placeholder="🍽️">
     <label>זמן הכנה</label><input id="sTime" type="text" placeholder="45 דקות">
     <label>מנות</label><input id="sServings" type="text" placeholder="6 מנות">
     <label>תיאור קצר</label><textarea id="sDesc" rows="2"></textarea>
@@ -718,7 +722,7 @@ function addRecipeToPage(r) {
     '<summary class="recipe-summary">' +
       '<span class="drag-handle" title="גרור לשינוי סדר" style="display:none;cursor:grab;padding:0 6px 0 0;color:#bbb;font-size:1.1rem;align-items:center;touch-action:none;">⠿</span>' +
       '<span class="toggle-icon">▶</span>' +
-      '<span class="emoji">'+getCategoryEmoji(catName)+'</span>' +
+      '<span class="emoji">'+(r.emoji||'🍽️')+'</span>' +
       '<span class="recipe-name">'+(r.name||'')+'</span>' +
       '<span class="meta">' +
         '<span class="by">✦ '+(r.by||'')+'</span>' +
@@ -904,7 +908,7 @@ function submitSuggest() {
   if (!name || !cat || !by || !ings || !stps) { showToast('נא למלא שדות חובה'); return; }
   var r = {
     name: name, cat: cat,
-    emoji: getCategoryEmoji(cat),
+    emoji: (document.getElementById('sEmoji').value||'🍽️').trim(),
     by: by,
     time: (document.getElementById('sTime').value||'').trim(),
     servings: (document.getElementById('sServings').value||'').trim(),
@@ -1062,7 +1066,7 @@ function saveEdit() {
     originalId:  editingId,
     name:        document.getElementById('eName').value.trim(),
     cat:         document.getElementById('eCat').value || cat,
-    emoji:       getCategoryEmoji(document.getElementById('eCat').value || cat),
+    emoji:       emojiEl ? emojiEl.textContent.trim() : '🍽️',
     by:          document.getElementById('eBy').value.trim(),
     time:        document.getElementById('eTime').value.trim(),
     servings:    servEl ? servEl.textContent.replace('👥 ','').trim() : '',
@@ -1232,144 +1236,4 @@ function clearForm(prefix) {
 </script>
 
 
-<iframe ng-non-bindable="" frameborder="0" hspace="0" marginheight="0" marginwidth="0" scrolling="no" tabindex="-1" vspace="0" width="100%" aria-hidden="true" id="I0_1773251361737" name="I0_1773251361737" src="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/iframe.html" style="position: absolute; top: -100px; width: 1px; height: 1px;"></iframe><iframe ng-non-bindable="" frameborder="0" hspace="0" marginheight="0" marginwidth="0" scrolling="no" tabindex="-1" vspace="0" width="100%" aria-hidden="true" id="I0_1773306492348" name="I0_1773306492348" src="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/iframe(1).html" style="position: absolute; top: -100px; width: 1px; height: 1px;"></iframe><iframe id="_printFrame" style="position: fixed; top: -9999px; left: -9999px; width: 1px; height: 1px; border: none;" src="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/saved_resource.html"></iframe><iframe id="_printAllFrame" style="position: fixed; top: -9999px; left: -9999px; width: 1px; height: 1px; border: none;" src="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/saved_resource(1).html"></iframe>
-<script>
-function getCategoryEmoji(catName) {
-  var clean = (catName || '').replace(/[\u200e\u200f]/g, '').replace(/\s+/g, ' ').trim();
-  var map = {
-    'חמוצים וכבושים':'🫙','סלטים ורטבים':'🥗','מרקים':'🍲',
-    'עוף ובשר':'🍗🥩','דגים':'🐟','פשטידות וירקות':'🥦',
-    'פסטה ואורז':'🍝','לחמים ומאפים':'🍞','עוגות וקינוחים':'🎂',
-    'עוגיות וחטיפים':'🍪','שתייה':'🥤'
-  };
-  return map[clean] || '🍽️';
-}
-
-function normalizeRecipeEmojis() {
-  document.querySelectorAll('.cloud-recipe').forEach(function(el) {
-    var cat = (el.getAttribute('data-cat') || '').replace(/[\u200e\u200f]/g, '').replace(/\s+/g, ' ').trim();
-    if (!cat) {
-      var sec = el.closest('.cat-section');
-      var title = sec ? sec.querySelector('.cat-title') : null;
-      if (title) {
-        cat = title.textContent.replace(/^\S+\s+/, '').trim();
-        if (cat) el.setAttribute('data-cat', cat);
-      }
-    }
-    var emojiEl = el.querySelector('.emoji');
-    if (emojiEl) emojiEl.textContent = getCategoryEmoji(cat);
-  });
-}
-
-(function() {
-  var originalSubmitSuggest = window.submitSuggest;
-  window.submitSuggest = function() {
-    var name = (document.getElementById('sName') && document.getElementById('sName').value || '').trim();
-    var cat  = (document.getElementById('sCat') && document.getElementById('sCat').value || '').trim();
-    var by   = (document.getElementById('sBy') && document.getElementById('sBy').value || '').trim();
-    var ings = (document.getElementById('sIngredients') && document.getElementById('sIngredients').value || '').trim();
-    var stps = (document.getElementById('sSteps') && document.getElementById('sSteps').value || '').trim();
-    if (!name || !cat || !by || !ings || !stps) { showToast('נא למלא שדות חובה'); return; }
-    var r = {
-      name: name,
-      cat: cat,
-      emoji: getCategoryEmoji(cat),
-      by: by,
-      time: (document.getElementById('sTime') && document.getElementById('sTime').value || '').trim(),
-      servings: (document.getElementById('sServings') && document.getElementById('sServings').value || '').trim(),
-      desc: (document.getElementById('sDesc') && document.getElementById('sDesc').value || '').trim(),
-      ingredients: ings.split('\n').filter(Boolean).join('|'),
-      steps: stps.split('\n').filter(Boolean).join('|'),
-      tip: (document.getElementById('sTip') && document.getElementById('sTip').value || '').trim(),
-      status: 'pending',
-      submittedAt: new Date().toISOString()
-    };
-    dbPush('/pending', r, function(key) {
-      if (key) {
-        showToast('המתכון נשלח לאישור! תודה 🙏');
-        closeSuggestForm();
-      } else {
-        showToast('שגיאה בשליחה, נסה שוב');
-      }
-    });
-  };
-
-  var originalSaveEdit = window.saveEdit;
-  window.saveEdit = function() {
-    if (!window.editingId) return originalSaveEdit && originalSaveEdit();
-    var el = document.getElementById(window.editingId);
-    if (!el) return;
-    var fbkey   = el.getAttribute('data-fbkey');
-    var cat     = el.getAttribute('data-cat') || '';
-    var servEl  = el.querySelector('.meta span:nth-child(3)');
-    var updated = {
-      originalId:  window.editingId,
-      name:        (document.getElementById('eName').value || '').trim(),
-      cat:         (document.getElementById('eCat').value || cat).trim(),
-      emoji:       getCategoryEmoji((document.getElementById('eCat').value || cat).trim()),
-      by:          (document.getElementById('eBy').value || '').trim(),
-      time:        (document.getElementById('eTime').value || '').trim(),
-      servings:    servEl ? servEl.textContent.replace('👥 ','').trim() : '',
-      desc:        (document.getElementById('eDesc').value || '').trim(),
-      ingredients: (document.getElementById('eIng').value || '').trim().split('\n').filter(Boolean).join('|'),
-      steps:       (document.getElementById('eSteps').value || '').trim().split('\n').filter(Boolean).join('|'),
-      tip:         (document.getElementById('eTip').value || '').trim()
-    };
-    dbSet('/recipes/' + fbkey, updated, function() {
-      var tmp = JSON.parse(JSON.stringify(updated));
-      tmp.firebaseKey = fbkey;
-      tmp.ingredients = tmp.ingredients ? tmp.ingredients.split('|') : [];
-      tmp.steps = tmp.steps ? tmp.steps.split('|') : [];
-      el.remove();
-      addRecipeToPage(tmp);
-      normalizeRecipeEmojis();
-      closeEdit();
-      updateStats();
-      showToast('המתכון נשמר');
-    });
-  };
-
-  window.addEventListener('load', function() {
-    normalizeRecipeEmojis();
-    setTimeout(normalizeRecipeEmojis, 300);
-    setTimeout(normalizeRecipeEmojis, 900);
-
-    var main = document.getElementById('mainContent');
-    if (main && window.MutationObserver) {
-      var normalizeTimer = null;
-      new MutationObserver(function(mutations) {
-        var shouldNormalize = mutations.some(function(m) { return m.addedNodes && m.addedNodes.length; });
-        if (!shouldNormalize) return;
-        if (normalizeTimer) clearTimeout(normalizeTimer);
-        normalizeTimer = setTimeout(function() { normalizeRecipeEmojis(main); }, 50);
-      }).observe(main, {childList:true, subtree:true});
-    }
-
-    var f = document.getElementById('f_emoji');
-    if (f) {
-      var fieldWrap = f.closest('.field, .form-row, .input-group, div');
-      if (fieldWrap && fieldWrap !== document.body) {
-        fieldWrap.remove();
-      } else if (f.parentElement) {
-        f.parentElement.remove();
-      } else {
-        f.remove();
-      }
-    }
-
-    var s = document.getElementById('sEmoji');
-    if (s) {
-      var sWrap = s.closest('.field, .form-row, .input-group, div');
-      if (sWrap && sWrap !== document.body) {
-        sWrap.remove();
-      } else if (s.parentElement) {
-        s.parentElement.remove();
-      } else {
-        s.remove();
-      }
-    }
-  });
-})();
-</script>
-
-</body></html>
+<iframe ng-non-bindable="" frameborder="0" hspace="0" marginheight="0" marginwidth="0" scrolling="no" tabindex="-1" vspace="0" width="100%" aria-hidden="true" id="I0_1773251361737" name="I0_1773251361737" src="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/iframe.html" style="position: absolute; top: -100px; width: 1px; height: 1px;"></iframe><iframe ng-non-bindable="" frameborder="0" hspace="0" marginheight="0" marginwidth="0" scrolling="no" tabindex="-1" vspace="0" width="100%" aria-hidden="true" id="I0_1773306492348" name="I0_1773306492348" src="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/iframe(1).html" style="position: absolute; top: -100px; width: 1px; height: 1px;"></iframe><iframe id="_printFrame" style="position: fixed; top: -9999px; left: -9999px; width: 1px; height: 1px; border: none;" src="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/saved_resource.html"></iframe><iframe id="_printAllFrame" style="position: fixed; top: -9999px; left: -9999px; width: 1px; height: 1px; border: none;" src="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/saved_resource(1).html"></iframe></body></html>
