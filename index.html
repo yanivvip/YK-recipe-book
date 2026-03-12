@@ -369,8 +369,8 @@ body.admin-active .admin-only{display:inline-flex;}
         </select>
       </div>
       <div>
-        <label style="font-size:.8rem; color:#888; display:block; margin-bottom:4px;">אמוג'י</label>
-        <input id="f_emoji" type="text" placeholder="🍲" maxlength="2" style="width:100%; padding:9px 12px; border:1.5px solid #ccc; border-radius:8px; font-size:1.2rem; font-family:inherit; outline:none;">
+        <label style="font-size:.8rem; color:#888; display:block; margin-bottom:4px;">אייקון קטגוריה</label>
+        <input id="f_emoji" type="text" placeholder="🍲" maxlength="4" readonly style="width:100%; padding:9px 12px; border:1.5px solid #ccc; border-radius:8px; font-size:1.2rem; font-family:inherit; outline:none; background:#f7f7f7; color:#666;">
       </div>
       <div>
         <label style="font-size:.8rem; color:#888; display:block; margin-bottom:4px;">מי מכין?</label>
@@ -477,7 +477,7 @@ body.admin-active .admin-only{display:inline-flex;}
       <option>עוגיות וחטיפים</option><option>שתייה</option>
     </select>
     <label>שם השף / מי הכין *</label><input id="sBy" type="text">
-    <label>אמוג'י (אופציונלי)</label><input id="sEmoji" type="text" placeholder="🍽️">
+    <label>אייקון הקטגוריה</label><input id="sEmoji" type="text" placeholder="🍽️" readonly style="background:#f7f7f7;color:#666;">
     <label>זמן הכנה</label><input id="sTime" type="text" placeholder="45 דקות">
     <label>מנות</label><input id="sServings" type="text" placeholder="6 מנות">
     <label>תיאור קצר</label><textarea id="sDesc" rows="2"></textarea>
@@ -532,6 +532,7 @@ var STATIC_RECIPES = [{"originalId": "recipe-1", "name": "חמוצי לפת", "c
 var DB_URL = 'https://yk-recipe-book-default-rtdb.firebaseio.com';
 var adminMode = false;
 var authToken = null;
+var ADMIN_EMAIL = 'yaniv.vip@gmail.com';
 
 var CATS = ['חמוצים וכבושים','סלטים ורטבים','מרקים','עוף ובשר','דגים',
             'פשטידות וירקות','פסטה ואורז','לחמים ומאפים','עוגות וקינוחים',
@@ -542,6 +543,80 @@ var CAT_EMOJI = {
   'פסטה ואורז':'🍝','לחמים ומאפים':'🍞','עוגות וקינוחים':'🎂',
   'עוגיות וחטיפים':'🍪','שתייה':'🥤'
 };
+
+function getCategoryEmoji(catName) {
+  return CAT_EMOJI[catName] || '🍽️';
+}
+
+function applyFixedCategoryIcons() {
+  document.querySelectorAll('.cloud-recipe').forEach(function(el) {
+    var cat = el.getAttribute('data-cat') || '';
+    var emojiEl = el.querySelector('.emoji');
+    if (emojiEl) emojiEl.textContent = getCategoryEmoji(cat);
+  });
+  document.querySelectorAll('.cat-section').forEach(function(sec) {
+    var titleEl = sec.querySelector('.cat-title');
+    if (!titleEl) return;
+    var titleText = titleEl.textContent.replace(/^[^\s]+\s+/, '').trim();
+    titleEl.textContent = getCategoryEmoji(titleText) + ' ' + titleText;
+  });
+}
+
+function syncCategoryEmojiFields(catName) {
+  var emoji = getCategoryEmoji(catName);
+  var f = document.getElementById('f_emoji');
+  var s = document.getElementById('sEmoji');
+  if (f) f.value = emoji;
+  if (s) s.value = emoji;
+}
+
+function autoEmoji(catName) {
+  syncCategoryEmojiFields(catName);
+}
+
+function setAdminUI(enabled) {
+  adminMode = !!enabled;
+  document.body.classList.toggle('admin-active', adminMode);
+  var btn = document.getElementById('adminToggleBtn');
+  if (btn) {
+    btn.classList.toggle('active', adminMode);
+    btn.textContent = adminMode ? '🔓 יציאה' : '🔐 ניהול';
+  }
+  if (adminMode) {
+    loadPendingBadge();
+    initDragDrop();
+  } else {
+    destroyDragDrop();
+  }
+}
+
+function initAuth() {
+  if (!window.firebase || !firebase.auth) return;
+  firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(){});
+  firebase.auth().getRedirectResult().catch(function(err) {
+    if (err && err.message) showToast('כניסה נכשלה: ' + err.message);
+  });
+  firebase.auth().onAuthStateChanged(function(user) {
+    if (!user) {
+      authToken = null;
+      setAdminUI(false);
+      return;
+    }
+    user.getIdToken().then(function(token) {
+      var email = user.email || '';
+      if (email !== ADMIN_EMAIL) {
+        firebase.auth().signOut();
+        showToast('אין הרשאת ניהול ❌');
+        return;
+      }
+      authToken = token;
+      setAdminUI(true);
+    }).catch(function() {
+      authToken = null;
+      setAdminUI(false);
+    });
+  });
+}
 
 // ── Firebase ──────────────────────────────────────────────────────────────────
 function dbGet(path, cb) {
@@ -608,6 +683,10 @@ function scrollToCat(catName) {
 
 addEventListener('load', function() {
   document.querySelectorAll('.cat-count').forEach(function(el){ el.textContent='(0)'; });
+  initAuth();
+  syncCategoryEmojiFields('');
+  var sCat = document.getElementById('sCat');
+  if (sCat) sCat.addEventListener('change', function(){ syncCategoryEmojiFields(this.value); });
   migrateIfNeeded();
 
   // סגור מתכון אחר בעת פתיחת חדש
@@ -616,7 +695,6 @@ addEventListener('load', function() {
       document.querySelectorAll('details.recipe[open]').forEach(function(d) {
         if (d !== e.target) d.removeAttribute('open');
       });
-      // גלול אוטומטי למתכון - מחכה שה-details יתרחב
       function doScroll() {
         var el = e.target;
         var isMobile = window.innerWidth <= 600;
@@ -631,9 +709,7 @@ addEventListener('load', function() {
 
   loadPendingBadge();
 
-  // פתח מתכון ספציפי אם יש anchor בURL
   function openRecipeFromHash() {
-    // תמיכה בשני פורמטים: ?recipe=ID (פייסבוק) ו-#ID (ווצאפ/ישיר)
     var recipeId = decodeURIComponent(window.location.hash.replace('#',''));
     if (!recipeId) return;
     var el = document.getElementById(recipeId);
@@ -679,6 +755,7 @@ function loadCloudRecipes() {
       addRecipeToPage(r);
     });
     updateStats();
+    applyFixedCategoryIcons();
     // טען סדר שמור לכל קטגוריה
     var secs = document.querySelectorAll('.cat-section');
     var pending = secs.length;
@@ -702,7 +779,7 @@ function addRecipeToPage(r) {
     sec = document.createElement('section');
     sec.id = secId;
     sec.className = 'cat-section';
-    sec.innerHTML = '<h2 class="cat-title">'+(CAT_EMOJI[catName]||'🍽️')+' '+catName+'</h2>';
+    sec.innerHTML = '<h2 class="cat-title">'+getCategoryEmoji(catName)+' '+catName+'</h2>';
     main.appendChild(sec);
   }
   var fbkey = r.firebaseKey || r.originalId || ('r-'+Date.now());
@@ -722,7 +799,7 @@ function addRecipeToPage(r) {
     '<summary class="recipe-summary">' +
       '<span class="drag-handle" title="גרור לשינוי סדר" style="display:none;cursor:grab;padding:0 6px 0 0;color:#bbb;font-size:1.1rem;align-items:center;touch-action:none;">⠿</span>' +
       '<span class="toggle-icon">▶</span>' +
-      '<span class="emoji">'+(r.emoji||'🍽️')+'</span>' +
+      '<span class="emoji">'+getCategoryEmoji(catName)+'</span>' +
       '<span class="recipe-name">'+(r.name||'')+'</span>' +
       '<span class="meta">' +
         '<span class="by">✦ '+(r.by||'')+'</span>' +
@@ -852,37 +929,51 @@ function searchRecipes() {
 function toggleAdmin() {
   if (adminMode) {
     firebase.auth().signOut().then(function() {
-      adminMode = false;
       authToken = null;
-      document.body.classList.remove('admin-active');
-      var btn = document.getElementById('adminToggleBtn');
-      if(btn){ btn.classList.remove('active'); btn.textContent='🔐 ניהול'; }
+      setAdminUI(false);
       showToast('יצאת ממצב ניהול');
-      destroyDragDrop();
     });
-  } else {
-    var provider = new firebase.auth.GoogleAuthProvider();
-    firebase.auth().signInWithPopup(provider).then(function(result) {
-      return result.user.getIdToken();
-    }).then(function(token) {
-      var email = firebase.auth().currentUser ? firebase.auth().currentUser.email : '';
-      if (email !== 'yaniv.vip@gmail.com') {
-        firebase.auth().signOut();
-        showToast('אין הרשאת ניהול ❌');
-        return;
-      }
+    return;
+  }
+
+  var currentUser = firebase.auth().currentUser;
+  if (currentUser && (currentUser.email || '') === ADMIN_EMAIL) {
+    currentUser.getIdToken(true).then(function(token) {
       authToken = token;
-      adminMode = true;
-      document.body.classList.add('admin-active');
-      var btn = document.getElementById('adminToggleBtn');
-      if(btn){ btn.classList.add('active'); btn.textContent='🔓 יציאה'; }
+      setAdminUI(true);
       showToast('מצב ניהול פעיל ✅');
-      loadPendingBadge();
-      initDragDrop();
     }).catch(function(err) {
       showToast('כניסה נכשלה: ' + err.message);
     });
+    return;
   }
+
+  if (location.protocol === 'file:') {
+    showToast('ניהול עובד רק באתר המועלה לענן, לא מקובץ מקומי');
+    return;
+  }
+
+  var provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider).then(function(result) {
+    return result.user.getIdToken();
+  }).then(function(token) {
+    var email = firebase.auth().currentUser ? firebase.auth().currentUser.email : '';
+    if (email !== ADMIN_EMAIL) {
+      firebase.auth().signOut();
+      showToast('אין הרשאת ניהול ❌');
+      return;
+    }
+    authToken = token;
+    setAdminUI(true);
+    showToast('מצב ניהול פעיל ✅');
+  }).catch(function(err) {
+    var code = err && err.code ? String(err.code) : '';
+    if (code.indexOf('popup') >= 0 || code.indexOf('operation-not-supported-in-this-environment') >= 0) {
+      firebase.auth().signInWithRedirect(provider);
+      return;
+    }
+    showToast('כניסה נכשלה: ' + (err && err.message ? err.message : 'שגיאה לא ידועה'));
+  });
 }
 
 function closePw() {
@@ -908,7 +999,7 @@ function submitSuggest() {
   if (!name || !cat || !by || !ings || !stps) { showToast('נא למלא שדות חובה'); return; }
   var r = {
     name: name, cat: cat,
-    emoji: (document.getElementById('sEmoji').value||'🍽️').trim(),
+    emoji: getCategoryEmoji(cat),
     by: by,
     time: (document.getElementById('sTime').value||'').trim(),
     servings: (document.getElementById('sServings').value||'').trim(),
@@ -990,6 +1081,7 @@ function approveRecipe(pendingKey) {
   dbGet('/pending/' + pendingKey, function(r) {
     if (!r) return;
     r.status = 'approved';
+    r.emoji = getCategoryEmoji(r.cat);
     delete r.submittedAt;
     var newKey = 'recipe-p-' + pendingKey;
     r.originalId = newKey;
@@ -1066,7 +1158,7 @@ function saveEdit() {
     originalId:  editingId,
     name:        document.getElementById('eName').value.trim(),
     cat:         document.getElementById('eCat').value || cat,
-    emoji:       emojiEl ? emojiEl.textContent.trim() : '🍽️',
+    emoji:       getCategoryEmoji(document.getElementById('eCat').value || cat),
     by:          document.getElementById('eBy').value.trim(),
     time:        document.getElementById('eTime').value.trim(),
     servings:    servEl ? servEl.textContent.replace('👥 ','').trim() : '',
