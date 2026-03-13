@@ -834,25 +834,32 @@ function loadCatOrder(sec, callback) {
     callback();
   }
 
-  var localIds = null;
-  try {
-    var raw = localStorage.getItem(key);
-    if (raw) {
+  function getLocalIds() {
+    try {
+      var raw = localStorage.getItem(key);
+      if (!raw) return null;
       var parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length) localIds = parsed;
+      return Array.isArray(parsed) && parsed.length ? parsed : null;
+    } catch (e) {
+      return null;
     }
-  } catch (e) {}
-
-  if (localIds && localIds.length) {
-    applyOrder(localIds);
-    return;
   }
 
   dbGet('/' + key, function(orderStr) {
-    if (!orderStr) { callback(); return; }
-    var ids = String(orderStr).split(',').map(function(x){ return x.trim(); }).filter(Boolean);
-    try { localStorage.setItem(key, JSON.stringify(ids)); } catch (e) {}
-    applyOrder(ids);
+    if (orderStr) {
+      var ids = String(orderStr).split(',').map(function(x){ return x.trim(); }).filter(Boolean);
+      try { localStorage.setItem(key, JSON.stringify(ids)); } catch (e) {}
+      applyOrder(ids);
+      return;
+    }
+
+    var localIds = getLocalIds();
+    if (localIds && localIds.length) {
+      applyOrder(localIds);
+      return;
+    }
+
+    callback();
   });
 }
 
