@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <!-- saved from url=(0042)https://yanivvip.github.io/YK-recipe-book/ -->
-<html lang="he" dir="rtl"><script src="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/cb=gapi.loaded_0" async=""></script><script src="chrome-extension://neigoggljhfnodeneidndcflnclldnpm/content.js"></script><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<html lang="he" dir="rtl"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta property="og:site_name" content="ספר המתכונים של יניב">
 <meta property="og:type" content="website">
-<meta property="og:title" id="og-title" content="מרק עגבניות עם אורז — מתכון של אמא | ספר המתכונים של יניב">
-<meta property="og:description" id="og-desc" content="מרק עגבניות פשוט עם אורז, מתאים לכל גיל">
-<meta property="og:url" id="og-url" content="https://yanivvip.github.io/YK-recipe-book/#recipe-9">
+<meta property="og:title" id="og-title" content="ספר המתכונים של יניב">
+<meta property="og:description" id="og-desc" content="ספר מתכונים משפחתי עם מתכונים מהבית">
+<meta property="og:url" id="og-url" content="https://yanivvip.github.io/YK-recipe-book/">
 <meta property="og:image" content="https://yanivvip.github.io/YK-recipe-book/preview.jpg">
-<link href="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/css2" rel="stylesheet">
-<script src="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/Sortable.min.js.download"></script>
-<script src="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/firebase-app-compat.js.download"></script>
-<script src="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/firebase-auth-compat.js.download"></script>
-<script src="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/firebase-database-compat.js.download"></script>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 
 <script>
   firebase.initializeApp({
@@ -23,7 +23,7 @@
   });
 </script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>מרק עגבניות עם אורז — מתכון של אמא | ספר המתכונים של יניב</title>
+<title>ספר המתכונים של יניב</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family: Arial, "Helvetica Neue", sans-serif; background:#f7f5f0; color:#1a1a18; direction:rtl; }
@@ -786,58 +786,65 @@ function destroyDragDrop() {
   document.querySelectorAll('.drag-handle').forEach(function(h){ h.style.display='none'; });
 }
 
-function getCatOrderKey(sec) {
+function saveCatOrder(sec) {
   var catName = '';
   var titleEl = sec.querySelector('.cat-title');
   if (titleEl) {
-    catName = titleEl.textContent.replace(/[^֐-׿a-zA-Z0-9 ]/g,'').trim();
+    catName = titleEl.textContent.replace(/[^\u0590-\u05FFa-zA-Z0-9 ]/g,'').trim();
   }
-  return 'order_' + catName.replace(/[^֐-׿a-zA-Z0-9]/g,'_');
-}
-
-function applyCatOrder(sec, orderStr) {
-  if (!orderStr) return;
-  var ids = String(orderStr).split(',').map(function(id){ return id.trim(); }).filter(Boolean);
-  ids.forEach(function(id) {
-    var el = sec.querySelector('[data-fbkey="'+id+'"]') || document.getElementById(id);
-    if (el) sec.appendChild(el);
-  });
-}
-
-function saveCatOrder(sec) {
-  var key = getCatOrderKey(sec);
   var ids = [];
   sec.querySelectorAll('.recipe').forEach(function(el){
     ids.push(el.getAttribute('data-fbkey') || el.id);
   });
-  var orderStr = ids.join(',');
+  var key = 'order_' + catName.replace(/[^\u0590-\u05FFa-zA-Z0-9]/g,'_');
   try {
-    localStorage.setItem(key, orderStr);
+    localStorage.setItem(key, JSON.stringify(ids));
     localStorage.setItem(key + '_updatedAt', String(Date.now()));
-  } catch(e) {}
-  dbSet('/' + key, orderStr, function(){
+  } catch (e) {}
+  dbSet('/' + key, ids.join(','), function(){
     showToast('סדר נשמר ✅');
   });
 }
 
 function loadCatOrder(sec, callback) {
-  var key = getCatOrderKey(sec);
-  var localOrder = null;
-  try {
-    localOrder = localStorage.getItem(key);
-  } catch(e) {}
-  if (localOrder) {
-    applyCatOrder(sec, localOrder);
+  var catName = '';
+  var titleEl = sec.querySelector('.cat-title');
+  if (titleEl) {
+    catName = titleEl.textContent.replace(/[^\u0590-\u05FFa-zA-Z0-9 ]/g,'').trim();
   }
-  dbGet('/' + key, function(orderStr) {
-    if (orderStr) {
-      applyCatOrder(sec, orderStr);
-      try {
-        localStorage.setItem(key, String(orderStr));
-        localStorage.setItem(key + '_updatedAt', String(Date.now()));
-      } catch(e) {}
+  var key = 'order_' + catName.replace(/[^\u0590-\u05FFa-zA-Z0-9]/g,'_');
+
+  function applyOrder(ids) {
+    if (!Array.isArray(ids) || !ids.length) {
+      callback();
+      return;
     }
-    if (callback) callback();
+    ids.forEach(function(id) {
+      var el = sec.querySelector('[data-fbkey="' + id + '"]') || document.getElementById(id);
+      if (el) sec.appendChild(el);
+    });
+    callback();
+  }
+
+  var localIds = null;
+  try {
+    var raw = localStorage.getItem(key);
+    if (raw) {
+      var parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length) localIds = parsed;
+    }
+  } catch (e) {}
+
+  if (localIds && localIds.length) {
+    applyOrder(localIds);
+    return;
+  }
+
+  dbGet('/' + key, function(orderStr) {
+    if (!orderStr) { callback(); return; }
+    var ids = String(orderStr).split(',').map(function(x){ return x.trim(); }).filter(Boolean);
+    try { localStorage.setItem(key, JSON.stringify(ids)); } catch (e) {}
+    applyOrder(ids);
   });
 }
 
@@ -1036,10 +1043,15 @@ function handleSignedInUser(user) {
 }
 
 function initAdminAuth() {
-  if (typeof firebase === 'undefined' || !firebase.auth) return;
+  if (typeof firebase === 'undefined' || !firebase.auth) {
+    showToast('ספריות הניהול לא נטענו');
+    return;
+  }
   firebase.auth().getRedirectResult().then(function(result) {
     if (result && result.user) handleSignedInUser(result.user);
-  }).catch(function(){});
+  }).catch(function(err){
+    if (err && err.message) showToast('שגיאת התחברות: ' + err.message);
+  });
   firebase.auth().onAuthStateChanged(function(user) {
     handleSignedInUser(user);
   });
@@ -1057,16 +1069,22 @@ function toggleAdmin() {
       setAdminUi(false);
       showToast('יצאת ממצב ניהול');
     }).catch(function(err) {
-      showToast('שגיאה ביציאה: ' + err.message);
+      showToast('שגיאה ביציאה: ' + (err && err.message ? err.message : 'לא ידוע'));
     });
     return;
   }
 
   var provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+
   firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(function() {
     return firebase.auth().signInWithPopup(provider);
   }).then(function(result) {
-    return handleSignedInUser(result.user);
+    if (result && result.user) {
+      handleSignedInUser(result.user);
+      return;
+    }
+    showToast('לא התקבל משתמש מגוגל');
   }).catch(function(err) {
     var code = err && err.code ? err.code : '';
     if (code === 'auth/popup-blocked' || code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
