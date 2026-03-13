@@ -4,9 +4,9 @@
 
 <meta property="og:site_name" content="ספר המתכונים של יניב">
 <meta property="og:type" content="website">
-<meta property="og:title" id="og-title" content="ספר המתכונים של יניב">
-<meta property="og:description" id="og-desc" content="אוכל של בית, אוכל של משפחה, בספר המתכונים של יניב">
-<meta property="og:url" id="og-url" content="https://yanivvip.github.io/YK-recipe-book/">
+<meta property="og:title" id="og-title" content="מרק עגבניות עם אורז — מתכון של אמא | ספר המתכונים של יניב">
+<meta property="og:description" id="og-desc" content="מרק עגבניות פשוט עם אורז, מתאים לכל גיל">
+<meta property="og:url" id="og-url" content="https://yanivvip.github.io/YK-recipe-book/#recipe-9">
 <meta property="og:image" content="https://yanivvip.github.io/YK-recipe-book/preview.jpg">
 <link href="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/css2" rel="stylesheet">
 <script src="./מרק עגבניות עם אורז — מתכון של אמא _ ספר המתכונים של יניב_files/Sortable.min.js.download"></script>
@@ -23,7 +23,7 @@
   });
 </script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>ספר המתכונים של יניב</title>
+<title>מרק עגבניות עם אורז — מתכון של אמא | ספר המתכונים של יניב</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family: Arial, "Helvetica Neue", sans-serif; background:#f7f5f0; color:#1a1a18; direction:rtl; }
@@ -656,13 +656,6 @@ addEventListener('load', function() {
   }
   setTimeout(openRecipeFromHash, 800);
   window.addEventListener('hashchange', openRecipeFromHash);
-  document.title = 'ספר המתכונים של יניב';
-  var ogTitleEl = document.getElementById('og-title');
-  var ogDescEl = document.getElementById('og-desc');
-  var ogUrlEl = document.getElementById('og-url');
-  if (ogTitleEl) ogTitleEl.setAttribute('content', 'ספר המתכונים של יניב');
-  if (ogDescEl) ogDescEl.setAttribute('content', 'אוכל של בית, אוכל של משפחה, בספר המתכונים של יניב');
-  if (ogUrlEl) ogUrlEl.setAttribute('content', 'https://yanivvip.github.io/YK-recipe-book/');
 });
 
 // ── Load approved recipes ─────────────────────────────────────────────────────
@@ -803,14 +796,12 @@ function getCatOrderKey(sec) {
 }
 
 function applyCatOrder(sec, orderStr) {
-  if (!orderStr) return false;
+  if (!orderStr) return;
   var ids = String(orderStr).split(',').map(function(id){ return id.trim(); }).filter(Boolean);
-  if (!ids.length) return false;
   ids.forEach(function(id) {
     var el = sec.querySelector('[data-fbkey="'+id+'"]') || document.getElementById(id);
     if (el) sec.appendChild(el);
   });
-  return true;
 }
 
 function saveCatOrder(sec) {
@@ -820,26 +811,33 @@ function saveCatOrder(sec) {
     ids.push(el.getAttribute('data-fbkey') || el.id);
   });
   var orderStr = ids.join(',');
-  try { localStorage.setItem(key, orderStr); } catch(e) {}
-  dbSet('/meta/categoryOrders/' + key, orderStr, function(){
-    dbSet('/' + key, orderStr, function(){
-      showToast('סדר נשמר ✅');
-    });
+  try {
+    localStorage.setItem(key, orderStr);
+    localStorage.setItem(key + '_updatedAt', String(Date.now()));
+  } catch(e) {}
+  dbSet('/' + key, orderStr, function(){
+    showToast('סדר נשמר ✅');
   });
 }
 
 function loadCatOrder(sec, callback) {
   var key = getCatOrderKey(sec);
-  dbGet('/meta/categoryOrders/' + key, function(orderStr) {
-    if (applyCatOrder(sec, orderStr)) { callback(); return; }
-    dbGet('/' + key, function(legacyOrderStr) {
-      if (applyCatOrder(sec, legacyOrderStr)) { callback(); return; }
+  var localOrder = null;
+  try {
+    localOrder = localStorage.getItem(key);
+  } catch(e) {}
+  if (localOrder) {
+    applyCatOrder(sec, localOrder);
+  }
+  dbGet('/' + key, function(orderStr) {
+    if (orderStr) {
+      applyCatOrder(sec, orderStr);
       try {
-        var localOrderStr = localStorage.getItem(key);
-        applyCatOrder(sec, localOrderStr);
+        localStorage.setItem(key, String(orderStr));
+        localStorage.setItem(key + '_updatedAt', String(Date.now()));
       } catch(e) {}
-      callback();
-    });
+    }
+    if (callback) callback();
   });
 }
 
