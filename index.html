@@ -1163,31 +1163,47 @@ function showPendingPanel() {
     var list  = document.getElementById('pendingList');
     if (!panel || !list) return;
     list.innerHTML = '';
-    if (!data || Object.keys(data).length === 0) {
-      list.innerHTML = '<p style="text-align:center;color:#666;">אין מתכונים ממתינים</p>';
-    } else {
+
+    var items = [];
+    if (data && typeof data === 'object') {
       Object.keys(data).forEach(function(key) {
         var r = data[key];
-        var div = document.createElement('div');
-        div.className = 'pending-item';
-        div.innerHTML =
-          '<div class="pending-header">' +
-            '<strong>' + (r.name||'') + '</strong>' +
-            '<span style="color:#666;font-size:0.85rem"> | ' + (r.cat||'') + ' | ' + (r.by||'') + '</span>' +
-          '</div>' +
-          '<div style="font-size:0.85rem;color:#555;margin:6px 0;">' +
-            '<strong>מרכיבים:</strong> ' + (r.ingredients||'').replace(/\|/g,', ') +
-          '</div>' +
-          '<div style="font-size:0.85rem;color:#555;margin-bottom:8px;">' +
-            '<strong>הכנה:</strong> ' + (r.steps||'').replace(/\|/g,' → ') +
-          '</div>' +
-          '<div class="pending-actions">' +
-            '<button class="btn-approve" onclick="approveRecipe(\'' + key + '\')">✅ אשר</button>' +
-            '<button class="btn-reject" onclick="rejectRecipe(\'' + key + '\')">❌ דחה</button>' +
-          '</div>';
-        list.appendChild(div);
+        if (!r || typeof r !== 'object') return;
+        if (r.status !== 'pending') return;
+        if (!r.name || !r.cat || !r.by || !r.ingredients || !r.steps) return;
+        items.push({ key: key, recipe: r });
       });
     }
+
+    if (items.length === 0) {
+      list.innerHTML = '<p style="text-align:center;color:#666;">אין מתכונים ממתינים</p>';
+      panel.style.display = 'flex';
+      return;
+    }
+
+    items.forEach(function(item) {
+      var key = item.key;
+      var r = item.recipe;
+      var div = document.createElement('div');
+      div.className = 'pending-item';
+      div.innerHTML =
+        '<div class="pending-header">' +
+          '<strong>' + r.name + '</strong>' +
+          '<span style="color:#666;font-size:0.85rem"> | ' + r.cat + ' | ' + r.by + '</span>' +
+        '</div>' +
+        '<div style="font-size:0.85rem;color:#555;margin:6px 0;">' +
+          '<strong>מרכיבים:</strong> ' + String(r.ingredients).replace(/\|/g,', ') +
+        '</div>' +
+        '<div style="font-size:0.85rem;color:#555;margin-bottom:8px;">' +
+          '<strong>הכנה:</strong> ' + String(r.steps).replace(/\|/g,' → ') +
+        '</div>' +
+        '<div class="pending-actions">' +
+          '<button class="btn-approve" onclick="approveRecipe('' + key + '')">✅ אשר</button>' +
+          '<button class="btn-reject" onclick="rejectRecipe('' + key + '')">❌ דחה</button>' +
+        '</div>';
+      list.appendChild(div);
+    });
+
     panel.style.display = 'flex';
   });
 }
