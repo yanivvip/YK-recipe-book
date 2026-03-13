@@ -863,13 +863,13 @@ function updateStats() {
 function normalizeSearchText(str) {
   return (str || '')
     .toLowerCase()
-    .replace(/["'׳״.,!?()\[\]{}:;\/\\|+*=~`@#$%^&<>]/g, ' ')
+    .replace(/["'׳״.,!?()\[\]{}:;\/\|+*=~`@#$%^&<>]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
 function escapeRegExp(str) {
-  return String(str).replace(/[.*+?^${}()|[\]\]/g, '\\$&');
+  return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function clearSearchMarks(el) {
@@ -882,23 +882,35 @@ function clearSearchMarks(el) {
   });
 }
 
-function markTextInNode(root, query) {
-  if (!root || !query) return;
+function markTextInNode(root, tokens) {
+  if (!root || !tokens || !tokens.length) return;
   var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
     acceptNode: function(node) {
       if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
       if (node.parentNode && ['SCRIPT','STYLE'].indexOf(node.parentNode.nodeName) >= 0) return NodeFilter.FILTER_REJECT;
+      if (node.parentNode && node.parentNode.classList && node.parentNode.classList.contains('search-hit')) return NodeFilter.FILTER_REJECT;
       return NodeFilter.FILTER_ACCEPT;
     }
   });
+
   var nodes = [];
   while (walker.nextNode()) nodes.push(walker.currentNode);
-  var rx = new RegExp('(' + escapeRegExp(query) + ')', 'gi');
+
   nodes.forEach(function(node) {
-    if (!rx.test(node.nodeValue)) return;
-    rx.lastIndex = 0;
+    var original = node.nodeValue;
+    var replaced = original;
+    var changed = false;
+    tokens.forEach(function(token) {
+      if (!token) return;
+      var rx = new RegExp('(' + escapeRegExp(token) + ')', 'gi');
+      if (rx.test(replaced)) {
+        changed = true;
+        replaced = replaced.replace(rx, '<span class="search-hit">$1</span>');
+      }
+    });
+    if (!changed) return;
     var span = document.createElement('span');
-    span.innerHTML = node.nodeValue.replace(rx, '<span class="search-hit">$1</span>');
+    span.innerHTML = replaced;
     var frag = document.createDocumentFragment();
     while (span.firstChild) frag.appendChild(span.firstChild);
     node.parentNode.replaceChild(frag, node);
@@ -906,12 +918,15 @@ function markTextInNode(root, query) {
 }
 
 function searchRecipes() {
-  var raw = (document.getElementById('searchInput').value || '').trim();
+  var input = document.getElementById('searchInput');
+  if (!input) return;
+  var raw = (input.value || '').trim();
   var q = normalizeSearchText(raw);
   var tokens = q ? q.split(' ').filter(Boolean) : [];
 
   document.querySelectorAll('.cloud-recipe').forEach(function(el) {
     clearSearchMarks(el);
+
     if (!tokens.length) {
       el.open = false;
       return;
@@ -931,9 +946,9 @@ function searchRecipes() {
     if (matched) {
       el.classList.add('search-match');
       el.open = true;
-      markTextInNode(el.querySelector('.recipe-name'), raw);
-      markTextInNode(el.querySelector('.recipe-desc'), raw);
-      markTextInNode(el.querySelector('.recipe-body'), raw);
+      markTextInNode(el.querySelector('.recipe-name'), tokens);
+      markTextInNode(el.querySelector('.recipe-desc'), tokens);
+      markTextInNode(el.querySelector('.recipe-body'), tokens);
     } else {
       el.classList.add('search-hidden');
       el.open = false;
@@ -941,6 +956,10 @@ function searchRecipes() {
   });
 
   document.querySelectorAll('.cat-section').forEach(function(sec) {
+    if (!tokens.length) {
+      sec.style.display = '';
+      return;
+    }
     var visible = sec.querySelectorAll('.cloud-recipe:not(.search-hidden)').length;
     sec.style.display = visible ? '' : 'none';
   });
