@@ -1198,8 +1198,8 @@ function showPendingPanel() {
           '<strong>הכנה:</strong> ' + String(r.steps).replace(/\|/g,' → ') +
         '</div>' +
         '<div class="pending-actions">' +
-          '<button class="btn-approve" onclick="approveRecipe('' + key + '')">✅ אשר</button>' +
-          '<button class="btn-reject" onclick="rejectRecipe('' + key + '')">❌ דחה</button>' +
+          '<button class="btn-approve" onclick="approveRecipe(\'' + key + '\')">✅ אשר</button>' +
+          '<button class="btn-reject" onclick="rejectRecipe(\'' + key + '\')">❌ דחה</button>' +
         '</div>';
       list.appendChild(div);
     });
