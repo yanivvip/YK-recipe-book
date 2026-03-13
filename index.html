@@ -562,20 +562,25 @@ function dbSet(path, val, cb) {
   fetch(url, {
     method:'PUT', headers:{'Content-Type':'application/json'},
     body: JSON.stringify(val)
-  }).then(function(){ if(cb) cb(); }).catch(function(){ if(cb) cb(); });
+  }).then(function(r){
+    if (cb) cb(!!(r && r.ok));
+  }).catch(function(){ if(cb) cb(false); });
 }
 function dbPush(path, val, cb) {
   fetch(DB_URL + path + '.json' + (authToken ? '?auth=' + authToken : ''), {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify(val)
-  }).then(function(r){ return r.json(); })
-    .then(function(d){ if(cb) cb(d && d.name); })
-    .catch(function(){ if(cb) cb(null); });
+  }).then(function(r){
+    if (!r || !r.ok) throw new Error('push_failed');
+    return r.json();
+  })
+    .then(function(d){ if(cb) cb(d && d.name, true); })
+    .catch(function(){ if(cb) cb(null, false); });
 }
 function dbDelete(path, cb) {
   var url = DB_URL + path + '.json' + (authToken ? '?auth=' + authToken : '');
   fetch(url, {method:'DELETE'})
-    .then(function(){ if(cb) cb(); }).catch(function(){ if(cb) cb(); });
+    .then(function(r){ if(cb) cb(!!(r && r.ok)); }).catch(function(){ if(cb) cb(false); });
 }
 
 // ── Migration (one-time) ──────────────────────────────────────────────────────
@@ -697,6 +702,9 @@ function loadCloudRecipes() {
     secs.forEach(function(sec) {
       loadCatOrder(sec, function() {
         pending--;
+        if (pending === 0 && adminMode) {
+          initDragDrop();
+        }
       });
     });
   });
@@ -1285,7 +1293,6 @@ function saveEdit() {
   if (!el) return;
   var fbkey   = el.getAttribute('data-fbkey');
   var cat     = el.getAttribute('data-cat')||'';
-  var emojiEl = el.querySelector('.emoji');
   var timeEl  = el.querySelector('.meta span:nth-child(2)');
   var servEl  = el.querySelector('.meta span:nth-child(3)');
 
@@ -1303,14 +1310,13 @@ function saveEdit() {
     tip:         document.getElementById('eTip').value.trim()
   };
 
-  dbSet('/recipes/' + fbkey, updated, function() {
-    var tmp = JSON.parse(JSON.stringify(updated));
-    tmp.firebaseKey = fbkey;
-    tmp.ingredients = tmp.ingredients.split('|');
-    tmp.steps = tmp.steps.split('|');
-    el.remove();
-    addRecipeToPage(tmp);
+  dbSet('/recipes/' + fbkey, updated, function(ok) {
+    if (!ok) {
+      showToast('השמירה לענן נכשלה');
+      return;
+    }
     closeEdit();
+    loadCloudRecipes();
     showToast('המתכון עודכן!');
   });
 }
