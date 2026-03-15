@@ -1228,24 +1228,94 @@ function closePendingPanel() {
   var p=document.getElementById('pendingPanel'); if(p) p.style.display='none';
 }
 
+function getNextRecipeKey(cb) {
+  dbGet('/recipes', function(data) {
+    var maxId = 0;
+    if (data && typeof data === 'object') {
+      Object.keys(data).forEach(function(key) {
+        var item = data[key] || {};
+        var source = String(item.originalId || key || '');
+        var m = source.match(/recipe\-(\d+)/);
+        if (m) {
+          var n = parseInt(m[1], 10);
+          if (!isNaN(n) && n > maxId) maxId = n;
+        }
+      });
+    }
+    cb('recipe-' + (maxId + 1));
+  });
+}
+
+function appendRecipeToCategoryOrder(catName, recipeKey, cb) {
+  var key = 'order_' + String(catName || '').replace(/[^֐-׿a-zA-Z0-9]/g,'_');
+  dbGet('/' + key, function(orderStr) {
+    var ids = [];
+    if (orderStr) {
+      ids = String(orderStr).split(',').map(function(x){ return x.trim(); }).filter(Boolean);
+    }
+    if (ids.indexOf(recipeKey) === -1) ids.push(recipeKey);
+    try {
+      localStorage.setItem(key, JSON.stringify(ids));
+      localStorage.setItem(key + '_updatedAt', String(Date.now()));
+    } catch (e) {}
+    dbSet('/' + key, ids.join(','), function(ok) {
+      if (cb) cb(ok);
+    });
+  });
+}
+
 function approveRecipe(pendingKey) {
+  if (!adminMode) {
+    showToast('נדרש מצב ניהול');
+    return;
+  }
+
   dbGet('/pending/' + pendingKey, function(r) {
-    if (!r) return;
-    r.status = 'approved';
-    normalizeRecipeCategoryEmoji(r);
-    delete r.submittedAt;
-    var newKey = 'recipe-p-' + pendingKey;
-    r.originalId = newKey;
-    dbSet('/recipes/' + newKey, r, function() {
-      dbDelete('/pending/' + pendingKey, function() {
-        r.ingredients = r.ingredients ? r.ingredients.split('|') : [];
-        r.steps = r.steps ? r.steps.split('|') : [];
-        r.firebaseKey = newKey;
-        addRecipeToPage(r);
-        updateStats();
-        showToast('המתכון אושר ופורסם!');
-        showPendingPanel();
-        loadPendingBadge();
+    if (!r || typeof r !== 'object') {
+      showToast('המתכון הממתין לא נמצא');
+      loadPendingBadge();
+      showPendingPanel();
+      return;
+    }
+
+    if (!r.name || !r.cat || !r.by || !r.ingredients || !r.steps) {
+      showToast('לא ניתן לאשר מתכון חסר');
+      return;
+    }
+
+    getNextRecipeKey(function(newKey) {
+      var approved = {
+        originalId: newKey,
+        name: r.name || '',
+        cat: r.cat || '',
+        emoji: getCategoryEmoji(r.cat || ''),
+        by: r.by || '',
+        time: r.time || '',
+        servings: r.servings || '',
+        desc: r.desc || '',
+        ingredients: typeof r.ingredients === 'string' ? r.ingredients : (Array.isArray(r.ingredients) ? r.ingredients.join('|') : ''),
+        steps: typeof r.steps === 'string' ? r.steps : (Array.isArray(r.steps) ? r.steps.join('|') : ''),
+        tip: r.tip || ''
+      };
+
+      dbSet('/recipes/' + newKey, approved, function(savedOk) {
+        if (!savedOk) {
+          showToast('שמירת המתכון נכשלה');
+          return;
+        }
+
+        appendRecipeToCategoryOrder(approved.cat, newKey, function() {
+          dbDelete('/pending/' + pendingKey, function(deleteOk) {
+            if (!deleteOk) {
+              showToast('המתכון אושר, אך לא הוסר מההמתנה');
+            } else {
+              showToast('המתכון אושר ופורסם!');
+            }
+            loadCloudRecipes();
+            loadPendingBadge();
+            showPendingPanel();
+          });
+        });
       });
     });
   });
