@@ -280,11 +280,9 @@ body.admin-active .admin-only{display:inline-flex;}
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center center;
+  object-position: center 15%;
   display: block;
   filter: brightness(0.85);
-  transform: scale(0.92);
-  transform-origin: center center;
 }
 .outro-text {
   flex: 0.8;
@@ -554,20 +552,14 @@ function normalizeRecipeCategoryEmoji(recipe) {
 }
 
 // ── Firebase ──────────────────────────────────────────────────────────────────
-function buildDbUrl(path) {
-  var cleanPath = String(path || '').split('/').map(function(seg, idx){
-    return idx === 0 && seg === '' ? '' : encodeURIComponent(seg);
-  }).join('/');
-  return DB_URL + cleanPath + '.json' + (authToken ? '?auth=' + authToken : '');
-}
 function dbGet(path, cb) {
-  var url = buildDbUrl(path);
+  var url = DB_URL + path + '.json' + (authToken ? '?auth=' + authToken : '');
   fetch(url)
     .then(function(r){ return r.json(); })
     .then(cb).catch(function(){ cb(null); });
 }
 function dbSet(path, val, cb) {
-  var url = buildDbUrl(path);
+  var url = DB_URL + path + '.json' + (authToken ? '?auth=' + authToken : '');
   fetch(url, {
     method:'PUT', headers:{'Content-Type':'application/json'},
     body: JSON.stringify(val)
@@ -576,8 +568,7 @@ function dbSet(path, val, cb) {
   }).catch(function(){ if(cb) cb(false); });
 }
 function dbPush(path, val, cb) {
-  var url = buildDbUrl(path);
-  fetch(url, {
+  fetch(DB_URL + path + '.json' + (authToken ? '?auth=' + authToken : ''), {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify(val)
   }).then(function(r){
@@ -588,7 +579,7 @@ function dbPush(path, val, cb) {
     .catch(function(){ if(cb) cb(null, false); });
 }
 function dbDelete(path, cb) {
-  var url = buildDbUrl(path);
+  var url = DB_URL + path + '.json' + (authToken ? '?auth=' + authToken : '');
   fetch(url, {method:'DELETE'})
     .then(function(r){ if(cb) cb(!!(r && r.ok)); }).catch(function(){ if(cb) cb(false); });
 }
@@ -1382,11 +1373,9 @@ function saveEdit() {
   var cat     = el.getAttribute('data-cat')||'';
   var timeEl  = el.querySelector('.meta span:nth-child(2)');
   var servEl  = el.querySelector('.meta span:nth-child(3)');
-  var targetKey = String(fbkey || '').trim();
-  var normalizedKey = /^recipe\s+\d+$/i.test(targetKey) ? targetKey.replace(/\s+/g, '-') : targetKey;
 
   var updated = {
-    originalId:  normalizedKey || editingId,
+    originalId:  editingId,
     name:        document.getElementById('eName').value.trim(),
     cat:         document.getElementById('eCat').value || cat,
     emoji:       getCategoryEmoji(document.getElementById('eCat').value || cat),
@@ -1394,45 +1383,20 @@ function saveEdit() {
     time:        document.getElementById('eTime').value.trim(),
     servings:    servEl ? servEl.textContent.replace('👥 ','').trim() : '',
     desc:        document.getElementById('eDesc').value.trim(),
-    ingredients: document.getElementById('eIng').value.trim().split('
-').filter(Boolean).join('|'),
-    steps:       document.getElementById('eSteps').value.trim().split('
-').filter(Boolean).join('|'),
+    ingredients: document.getElementById('eIng').value.trim().split('\n').filter(Boolean).join('|'),
+    steps:       document.getElementById('eSteps').value.trim().split('\n').filter(Boolean).join('|'),
     tip:         document.getElementById('eTip').value.trim()
   };
 
-  function finishSave(ok) {
+  dbSet('/recipes/' + fbkey, updated, function(ok) {
     if (!ok) {
       showToast('השמירה לענן נכשלה');
-      return;
-    }
-    if (normalizedKey && normalizedKey !== targetKey) {
-      document.querySelectorAll('.cat-section').forEach(function(sec){
-        var ids = [];
-        sec.querySelectorAll('.recipe').forEach(function(node){
-          var current = node.getAttribute('data-fbkey') || node.id;
-          ids.push(current === targetKey ? normalizedKey : current);
-        });
-        var titleEl = sec.querySelector('.cat-title');
-        if (!titleEl) return;
-        var catName = titleEl.textContent.replace(/[^֐-׿a-zA-Z0-9 ]/g,'').trim();
-        var key = 'order_' + catName.replace(/[^֐-׿a-zA-Z0-9]/g,'_');
-        try { localStorage.setItem(key, JSON.stringify(ids)); } catch (e) {}
-        dbSet('/' + key, ids.join(','));
-      });
-      dbDelete('/recipes/' + targetKey, function(){
-        closeEdit();
-        loadCloudRecipes();
-        showToast('המתכון עודכן!');
-      });
       return;
     }
     closeEdit();
     loadCloudRecipes();
     showToast('המתכון עודכן!');
-  }
-
-  dbSet('/recipes/' + normalizedKey, updated, finishSave);
+  });
 }
 
 // ── Delete ────────────────────────────────────────────────────────────────────
