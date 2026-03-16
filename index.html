@@ -550,12 +550,16 @@ function setAdminUi(isAdmin) {
 }
 async function loadOrdersRaw() {
   const pairs = await Promise.all(APP.categories.map(async function(cat) {
-    const snap = await db.ref(orderPath(cat)).once('value');
-    const val = snap.val();
-    let arr = [];
-    if (Array.isArray(val)) arr = val.filter(Boolean);
-    else if (val && typeof val === 'object') arr = Object.values(val).filter(Boolean);
-    return [cat, arr];
+    try {
+      const snap = await db.ref(orderPath(cat)).once('value');
+      const val = snap.val();
+      let arr = [];
+      if (Array.isArray(val)) arr = val.filter(Boolean);
+      else if (val && typeof val === 'object') arr = Object.values(val).filter(Boolean);
+      return [cat, arr];
+    } catch (e) {
+      return [cat, []];
+    }
   }));
   return Object.fromEntries(pairs);
 }
