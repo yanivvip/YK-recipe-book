@@ -586,7 +586,7 @@ function dbDelete(path, cb) {
 
 // ── Migration (one-time) ──────────────────────────────────────────────────────
 function migrateIfNeeded() {
-  dbGet('/migrated_v10', function(val) {
+  dbGet('/migrated_v11', function(val) {
     if (val === true) { loadCloudRecipes(); return; }
     var banner = document.getElementById('cloudBanner');
     if (banner) { banner.style.display='block'; banner.textContent='⏳ מסנכרן מתכונים...'; }
@@ -635,7 +635,7 @@ function migrateIfNeeded() {
       var idx = 0;
       function nextTask() {
         if (idx >= tasks.length) {
-          dbSet('/migrated_v10', true, function() {
+          dbSet('/migrated_v11', true, function() {
             if (banner) banner.style.display='none';
             loadCloudRecipes();
           });
