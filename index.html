@@ -22,6 +22,32 @@
     databaseURL: "https://yk-recipe-book-default-rtdb.firebaseio.com"
   });
 </script>
+
+<script>
+  var ADMIN_EMAIL = 'yaniv.vip@gmail.com';
+  var ADMIN_UID = 'g6k1XkiOHBQurWyl1F5irsJkBkI3';
+  function isAllowedAdmin(user) {
+    return !!(user && user.email === ADMIN_EMAIL && user.uid === ADMIN_UID);
+  }
+  function applyAdminState(token) {
+    authToken = token || null;
+    adminMode = true;
+    document.body.classList.add('admin-active');
+    var btn = document.getElementById('adminToggleBtn');
+    if(btn){ btn.classList.add('active'); btn.textContent='🔓 יציאה'; }
+    loadPendingBadge();
+    initDragDrop();
+  }
+  function clearAdminState() {
+    adminMode = false;
+    authToken = null;
+    document.body.classList.remove('admin-active');
+    var btn = document.getElementById('adminToggleBtn');
+    if(btn){ btn.classList.remove('active'); btn.textContent='🔐 ניהול'; }
+    destroyDragDrop();
+  }
+</script>
+
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>מרק עגבניות עם אורז — מתכון של אמא | ספר המתכונים של יניב</title>
 <style>
@@ -841,37 +867,29 @@ function searchRecipes() {
 function toggleAdmin() {
   if (adminMode) {
     firebase.auth().signOut().then(function() {
-      adminMode = false;
-      authToken = null;
-      document.body.classList.remove('admin-active');
-      var btn = document.getElementById('adminToggleBtn');
-      if(btn){ btn.classList.remove('active'); btn.textContent='🔐 ניהול'; }
+      clearAdminState();
       showToast('יצאת ממצב ניהול');
-      destroyDragDrop();
     });
-  } else {
-    var provider = new firebase.auth.GoogleAuthProvider();
-    firebase.auth().signInWithPopup(provider).then(function(result) {
-      return result.user.getIdToken();
-    }).then(function(token) {
-      var email = firebase.auth().currentUser ? firebase.auth().currentUser.email : '';
-      if (email !== 'yaniv.vip@gmail.com') {
-        firebase.auth().signOut();
-        showToast('אין הרשאת ניהול ❌');
-        return;
-      }
-      authToken = token;
-      adminMode = true;
-      document.body.classList.add('admin-active');
-      var btn = document.getElementById('adminToggleBtn');
-      if(btn){ btn.classList.add('active'); btn.textContent='🔓 יציאה'; }
-      showToast('מצב ניהול פעיל ✅');
-      loadPendingBadge();
-      initDragDrop();
-    }).catch(function(err) {
-      showToast('כניסה נכשלה: ' + err.message);
-    });
+    return;
   }
+  var provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider).then(function(result) {
+    if (!isAllowedAdmin(result.user)) {
+      return firebase.auth().signOut().then(function(){ throw new Error('אין הרשאה לחשבון הזה'); });
+    }
+    return result.user.getIdToken();
+  }).then(function(token) {
+    applyAdminState(token);
+    showToast('מצב ניהול פעיל ✅');
+  }).catch(function(err) {
+    var code = err && err.code ? err.code : '';
+    if (code === 'auth/popup-blocked' || code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request' || code === 'auth/operation-not-supported-in-this-environment') {
+      sessionStorage.setItem('adminRedirectPending','1');
+      firebase.auth().signInWithRedirect(provider);
+      return;
+    }
+    showToast('כניסה נכשלה: ' + (err && err.message ? err.message : 'שגיאה לא ידועה'));
+  });
 }
 
 function closePw() {
