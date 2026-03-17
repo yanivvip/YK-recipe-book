@@ -298,6 +298,10 @@ body.admin-active .admin-only{display:inline-flex;}
   flex: 1.6;
   min-width: 0;
   order: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
 }
 .outro-family-photo {
   width: 100%;
@@ -306,6 +310,8 @@ body.admin-active .admin-only{display:inline-flex;}
   object-position: center 15%;
   display: block;
   filter: brightness(0.85);
+  transform: scale(0.92);
+  transform-origin: center center;
 }
 .outro-text {
   flex: 0.8;
@@ -708,7 +714,7 @@ function loadCloudRecipes() {
 
 // ── Add recipe card to page ───────────────────────────────────────────────────
 function addRecipeToPage(r) {
-  var catName = r.cat || '';
+  var catName = normalizeCategoryName(r.cat || '');
   var secId = 'sec-' + catName.replace(/[^\u0590-\u05FFa-zA-Z0-9]/g,'-');
   var sec = document.getElementById(secId);
   if (!sec) {
@@ -914,7 +920,7 @@ function submitSuggest() {
   var stps = (document.getElementById('sSteps').value||'').trim();
   if (!name || !cat || !by || !ings || !stps) { showToast('נא למלא שדות חובה'); return; }
   var r = {
-    name: name, cat: cat,
+    name: name, cat: normalizeCategoryName(cat),
     emoji: (document.getElementById('sEmoji').value||'🍽️').trim(),
     by: by,
     time: (document.getElementById('sTime').value||'').trim(),
@@ -1044,7 +1050,7 @@ function openEdit(id) {
   }
   var timeSpan = el.querySelector('.meta span:nth-child(2)');
   document.getElementById('eName').value = nameEl ? nameEl.textContent.trim() : '';
-  document.getElementById('eCat').value = el.getAttribute('data-cat') || '';
+  document.getElementById('eCat').value = normalizeCategoryName(el.getAttribute('data-cat') || '');
   document.getElementById('eBy').value   = byEl   ? byEl.textContent.replace('✦ ','').trim() : '';
   document.getElementById('eTime').value = timeSpan ? timeSpan.textContent.replace('⏱ ','').trim() : '';
   document.getElementById('eDesc').value = descEl ? descEl.textContent.trim() : '';
@@ -1072,7 +1078,7 @@ function saveEdit() {
   var updated = {
     originalId:  editingId,
     name:        document.getElementById('eName').value.trim(),
-    cat:         document.getElementById('eCat').value || cat,
+    cat:         normalizeCategoryName(document.getElementById('eCat').value || cat),
     emoji:       emojiEl ? emojiEl.textContent.trim() : '🍽️',
     by:          document.getElementById('eBy').value.trim(),
     time:        document.getElementById('eTime').value.trim(),
