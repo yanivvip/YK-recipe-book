@@ -360,6 +360,7 @@ body.admin-active .admin-only{display:inline-flex;}
   <input type="search" id="searchInput" placeholder="🔍  חפש מתכון..." oninput="doSearch(this.value)">
   <button onclick="openForm()" class="add-btn">+ הוסף מתכון</button>
   <button onclick="exportAll()" class="export-all-btn">🖨️ הדפס הכל</button>
+  <button onclick="shareBook()" class="export-all-btn">📤 שתף את כל הספר</button>
   <button class="admin-only" id="pendingBtn" onclick="showPendingPanel()">⏳ ממתינים <span id="pendingBadge" style="display: none;"></span></button>
   <button id="adminToggleBtn" onclick="toggleAdmin()" class="admin-btn">🔐 ניהול</button>
 </div>
@@ -632,6 +633,40 @@ function dbDelete(path, cb) {
     .then(function(r){ if(cb) cb(!!(r && r.ok)); }).catch(function(){ if(cb) cb(false); });
 }
 
+function getSharedRecipeId() {
+  var value = new URLSearchParams(window.location.search).get('recipe');
+  if (!value || value.length > 200 || /[.#$\[\]\/]/.test(value)) return '';
+  return value;
+}
+
+function enterSharedRecipeMode() {
+  document.querySelectorAll('.site-header, .search-bar, .cat-nav, .book-intro, .book-outro, #adminBar, #formOverlay, #editOverlay, #suggestOverlay, #pendingPanel').forEach(function(el) {
+    el.style.display = 'none';
+  });
+}
+
+function loadSharedRecipe(recipeId) {
+  enterSharedRecipeMode();
+  var main = document.getElementById('mainContent');
+  if (!main) return;
+  main.innerHTML = '<p id="sharedRecipeStatus" style="text-align:center;padding:40px 16px;">⏳ טוען מתכון...</p>';
+  dbGet('/recipes/' + encodeURIComponent(recipeId), function(r) {
+    main.innerHTML = '';
+    if (!r || typeof r !== 'object' || !r.name) {
+      main.innerHTML = '<p style="text-align:center;padding:40px 16px;">המתכון לא נמצא.</p>';
+      return;
+    }
+    r.firebaseKey = recipeId;
+    r.ingredients = r.ingredients ? (typeof r.ingredients === 'string' ? r.ingredients.split('|') : r.ingredients) : [];
+    r.steps = r.steps ? (typeof r.steps === 'string' ? r.steps.split('|') : r.steps) : [];
+    addRecipeToPage(r);
+    var recipe = document.getElementById(recipeId);
+    if (recipe) recipe.open = true;
+    var title = String(r.name || '').trim();
+    document.title = title ? title + ' | ספר המתכונים של יניב' : 'ספר המתכונים של יניב';
+  });
+}
+
 // ── Migration (one-time) ──────────────────────────────────────────────────────
 function migrateIfNeeded() {
   loadCloudRecipes();
@@ -650,6 +685,11 @@ function scrollToCat(catName) {
 }
 
 addEventListener('load', function() {
+  var sharedRecipeId = getSharedRecipeId();
+  if (sharedRecipeId) {
+    loadSharedRecipe(sharedRecipeId);
+    return;
+  }
   document.querySelectorAll('.cat-count').forEach(function(el){ el.textContent='(0)'; });
   migrateIfNeeded();
 
@@ -1460,6 +1500,17 @@ function deleteRecipe(id) {
 }
 
 // ── Share ─────────────────────────────────────────────────────────────────────
+function shareBook() {
+  var url = 'https://yanivvip.github.io/YK-recipe-book/';
+  var title = 'ספר המתכונים של יניב';
+  var text = '📖 ספר המתכונים של יניב';
+  if (navigator.share) {
+    navigator.share({ title: title, text: text, url: url });
+  } else {
+    window.open('https://wa.me/?text=' + encodeURIComponent(text + '\n' + url), '_blank');
+  }
+}
+
 function shareRecipe(btn) {
   var det = btn.closest('details');
   if (!det) return;
@@ -1468,7 +1519,7 @@ function shareRecipe(btn) {
   var desc = det.querySelector('.recipe-desc') ? det.querySelector('.recipe-desc').textContent.trim() : '';
   var recipeId = det.id || '';
   var baseUrl = 'https://yanivvip.github.io/YK-recipe-book';
-  var url = recipeId ? baseUrl + '/#' + encodeURIComponent(recipeId) : baseUrl;
+  var url = recipeId ? baseUrl + '/?recipe=' + encodeURIComponent(recipeId) : baseUrl + '/';
 
   // עדכן meta tags כדי שפייסבוק יראה את שם המתכון
   var ogTitle = name + (by ? ' — מתכון של ' + by : '') + ' | ספר המתכונים של יניב';
