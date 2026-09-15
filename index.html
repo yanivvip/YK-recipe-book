@@ -334,6 +334,109 @@ body.admin-active .admin-only{display:inline-flex;}
   transform-origin: center center;
 }
 
+/* navigation and search improvements */
+.search-bar {
+  position:sticky !important; top:0; z-index:120;
+  max-width:none; background:rgba(247,245,240,.97);
+  box-shadow:0 3px 14px rgba(0,0,0,.08);
+  backdrop-filter:blur(8px);
+}
+.search-result-count { color:#666; font-size:.82rem; white-space:nowrap; }
+.search-results-panel {
+  position:absolute; top:calc(100% + 6px); right:16px;
+  width:min(520px,calc(100vw - 32px)); max-height:360px; overflow:auto;
+  background:#fff; border:1px solid #ddd8cf; border-radius:14px;
+  box-shadow:0 10px 32px rgba(0,0,0,.16); padding:8px;
+  display:none; z-index:200;
+}
+.search-results-panel.visible { display:block; }
+.search-result-item {
+  display:block; width:100%; text-align:right; border:0; background:#fff;
+  border-radius:10px; padding:10px 12px; cursor:pointer; font-family:inherit;
+}
+.search-result-item:hover { background:#e8f4ed; }
+.search-result-item strong { display:block; color:#1a1a18; font-size:.95rem; }
+.search-result-item span { color:#777; font-size:.78rem; }
+.search-empty { padding:18px; color:#777; text-align:center; }
+.favorite-filter { border:0; cursor:pointer; font-family:inherit; }
+.favorite-filter .favorite-heart { color:#c6284d; font-size:1rem; }
+.favorite-filter.active { background:#fde8ec; color:#b32645; }
+.favorite-btn {
+  border:0; background:transparent; cursor:pointer; font-size:1.25rem;
+  line-height:1; padding:4px 6px; border-radius:50%;
+}
+.favorite-btn:hover { background:#fde8ec; }
+.clear-search-btn {
+  display:none; border:0; background:#e8e4dc; color:#555;
+  width:34px; height:34px; border-radius:50%; cursor:pointer;
+  font-size:1rem;
+}
+.back-to-top {
+  position:fixed; left:18px; bottom:18px; z-index:130;
+  width:48px; height:48px; border:0; border-radius:50%;
+  background:#2d6a4f; color:#fff; font-size:1.25rem;
+  box-shadow:0 5px 18px rgba(45,106,79,.32); cursor:pointer;
+  opacity:0; transform:translateY(12px); pointer-events:none;
+  transition:.2s;
+}
+.back-to-top.visible { opacity:1; transform:none; pointer-events:auto; }
+.shopping-list-btn {
+  margin-top:16px; padding:10px 16px; border:0; border-radius:100px;
+  background:#2d6a4f; color:#fff; font-family:inherit; font-size:.9rem;
+  font-weight:700; cursor:pointer;
+}
+.shopping-modal { max-width:620px; max-height:88vh; overflow:auto; }
+.shopping-modal { position:relative; }
+.shopping-x {
+  position:absolute; top:12px; left:12px; width:34px; height:34px;
+  border:0; border-radius:50%; background:#f0eeea; color:#555;
+  font-size:1rem; cursor:pointer;
+}
+.shopping-x:hover { background:#e1ddd5; color:#111; }
+.shopping-subtitle { color:#666; font-size:.88rem; margin:0 0 18px; }
+.shopping-group { margin:16px 0; }
+.shopping-group h4 {
+  font-size:.92rem; color:#2d6a4f; margin-bottom:8px;
+  padding-bottom:7px; border-bottom:1px solid #e5e3de;
+}
+.shopping-group.home-staples h4 { color:#8b5e34; }
+.shopping-row {
+  display:grid; grid-template-columns:auto 1fr auto; gap:8px;
+  align-items:center; padding:6px 0;
+}
+.shopping-row input[type="checkbox"] { width:19px; height:19px; accent-color:#2d6a4f; }
+.shopping-row input[type="text"] {
+  width:100%; padding:8px 10px; border:1px solid #d8d4cc;
+  border-radius:8px; font-family:inherit; font-size:.9rem;
+}
+.shopping-remove {
+  width:32px; height:32px; border:0; border-radius:50%;
+  background:#f3ece8; color:#a33; cursor:pointer;
+}
+.shopping-add {
+  border:1px dashed #2d6a4f; background:#fff; color:#2d6a4f;
+  border-radius:9px; padding:8px 12px; font-family:inherit;
+  font-weight:700; cursor:pointer;
+}
+.shopping-actions { display:flex; gap:8px; margin-top:18px; flex-wrap:wrap; }
+.shopping-send {
+  flex:1; min-width:190px; border:0; border-radius:10px;
+  background:#25D366; color:#fff; padding:11px 15px;
+  font-family:inherit; font-size:.95rem; font-weight:800; cursor:pointer;
+}
+.shopping-close {
+  border:1px solid #ccc; border-radius:10px; background:#fff;
+  color:#555; padding:11px 16px; font-family:inherit; cursor:pointer;
+}
+@media(max-width:600px) {
+  .search-bar { padding:9px 10px; gap:7px; }
+  .search-bar #searchInput { max-width:none; margin-right:0; }
+  .search-bar .add-btn, .search-bar .export-all-btn, .search-bar .admin-btn { display:none; }
+  .favorite-filter { font-size:.72rem; padding:4px 8px; }
+  .search-results-panel { right:8px; width:calc(100vw - 16px); }
+  .back-to-top { left:14px; bottom:14px; }
+}
+
 </style>
 </head>
 <body style="" class="">
@@ -358,6 +461,9 @@ body.admin-active .admin-only{display:inline-flex;}
 <div class="search-bar" style="position:relative;">
   <span id="pendingBanner" style="display: none; background: rgb(231, 76, 60); color: rgb(255, 255, 255); font-size: 0.72rem; font-weight: 700; border-radius: 50px; padding: 4px 12px; white-space: nowrap; cursor: default; flex-shrink: 0;">⏳ <span id="pendingBannerCount">0</span> ממתינים</span>
   <input type="search" id="searchInput" placeholder="🔍  חפש מתכון..." oninput="doSearch(this.value)">
+  <button class="clear-search-btn" id="clearSearchBtn" onclick="clearRecipeSearch()" title="נקה חיפוש">✕</button>
+  <span class="search-result-count" id="searchResultCount"></span>
+  <div class="search-results-panel" id="searchResultsPanel"></div>
   <button onclick="openForm()" class="add-btn">+ הוסף מתכון</button>
   <button onclick="exportAll()" class="export-all-btn">🖨️ הדפס הכל</button>
   <button onclick="shareBook()" class="export-all-btn">📤 שתף את כל הספר</button>
@@ -430,6 +536,7 @@ body.admin-active .admin-only{display:inline-flex;}
 <div id="adminBar" class="admin-bar">🔓 מצב ניהול פעיל — לחץ על ✏️ לעריכה או 🗑️ למחיקה</div>
 <div id="cloudBanner" style="display: none;">⏳ טוען מתכונים...</div>
 <nav class="cat-nav">
+<button type="button" class="cat-link favorite-filter" id="favoritesFilterBtn" onclick="toggleFavoritesView()"><span class="favorite-heart">♥</span> מתכונים אהובים <span id="favoritesCount">0</span></button>
 <a href="javascript:void(0)" class="cat-link" data-cat="חמוצים וכבושים" onclick="scrollToCat(&#39;חמוצים וכבושים&#39;)">חמוצים וכבושים <span class="cnt">3</span></a>
 <a href="javascript:void(0)" class="cat-link" data-cat="סלטים ורטבים" onclick="scrollToCat(&#39;סלטים ורטבים&#39;)">סלטים ורטבים <span class="cnt">4</span></a>
 <a href="javascript:void(0)" class="cat-link" data-cat="מרקים" onclick="scrollToCat(&#39;מרקים&#39;)">מרקים <span class="cnt">12</span></a>
@@ -512,6 +619,26 @@ body.admin-active .admin-only{display:inline-flex;}
     </div>
   </div>
 </div>
+<div id="shoppingOverlay" class="overlay" style="display:none;">
+  <div class="modal shopping-modal">
+    <button type="button" class="shopping-x" onclick="closeShoppingList()" title="סגירה">✕</button>
+    <h3>🛒 הכנת רשימת קניות</h3>
+    <p class="shopping-subtitle" id="shoppingRecipeName"></p>
+    <div class="shopping-group">
+      <h4>מצרכים לקנייה</h4>
+      <div id="shoppingNeededList"></div>
+    </div>
+    <div class="shopping-group home-staples">
+      <h4>בדרך כלל יש בבית</h4>
+      <div id="shoppingStaplesList"></div>
+    </div>
+    <button class="shopping-add" onclick="addShoppingItem()">הוספת מצרך</button>
+    <div class="shopping-actions">
+      <button class="shopping-send" onclick="sendShoppingToWhatsApp()">שליחה ב WhatsApp</button>
+      <button class="shopping-close" onclick="closeShoppingList()">סגירה</button>
+    </div>
+  </div>
+</div>
 <section class="book-intro">
   <div class="book-intro-inner">
     <p>את ספר המתכונים המשפחתי הזה התחלתי לכתוב ב- 27.11.05.</p>
@@ -521,6 +648,8 @@ body.admin-active .admin-only{display:inline-flex;}
 </section>
 
 <main id="mainContent"></main>
+
+<button class="back-to-top" id="backToTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="חזרה למעלה">↑</button>
 
 <section class="book-outro">
   <div class="book-outro-inner">
@@ -702,8 +831,8 @@ addEventListener('load', function() {
       // גלול אוטומטי למתכון - מחכה שה-details יתרחב
       function doScroll() {
         var el = e.target;
-        var isMobile = window.innerWidth <= 600;
-        var offset = isMobile ? 8 : 70;
+        var stickyBar = document.querySelector('.search-bar');
+        var offset = stickyBar ? stickyBar.offsetHeight + 12 : 12;
         var top = el.getBoundingClientRect().top + window.scrollY - offset;
         window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
       }
@@ -823,6 +952,7 @@ function addRecipeToPage(r) {
         '' +
       '</span>' +
       '<div class="action-btns">' +
+        '<button class="favorite-btn" onclick="event.preventDefault();event.stopPropagation();toggleFavorite(this)" title="הוספה לאהובים">♡</button>' +
         '<button class="btn-print-one" onclick="event.preventDefault();event.stopPropagation();printOne(\''+id+'\')" title="הדפס">🖨️ הדפס</button>' +
         '<button class="btn-share" onclick="event.preventDefault();event.stopPropagation();shareRecipe(this)" title="שתף">📤 שתף</button>' +
         '<button class="btn-edit admin-only" onclick="event.preventDefault();event.stopPropagation();openEdit(\''+id+'\')">✏️ ערוך</button>' +
@@ -836,9 +966,12 @@ function addRecipeToPage(r) {
         '<div><h3>👨‍🍳 הכנה</h3><ol>'+stps.map(function(s){return '<li>'+s+'</li>';}).join('')+'</ol></div>' +
       '</div>' +
       (r.tip ? '<p class="tip">💡 '+r.tip+'</p>' : '') +
+      '<button class="shopping-list-btn" onclick="openShoppingList(this)">🛒 הכנת רשימת קניות</button>' +
     '</div>';
 
   sec.appendChild(el);
+  updateFavoriteButton(el);
+  updateFavoritesCount();
 }
 
 // ── Drag & Drop סידור מתכונים ────────────────────────────────────────────────
@@ -1036,18 +1169,15 @@ function markTextInNode(root, tokens) {
 
 function searchRecipes() {
   var input = document.getElementById('searchInput');
-  if (!input) return;
+  if (!input) return [];
   var raw = (input.value || '').trim();
   var q = normalizeSearchText(raw);
   var tokens = q ? q.split(' ').filter(Boolean) : [];
+  var matches = [];
 
   document.querySelectorAll('.cloud-recipe').forEach(function(el) {
     clearSearchMarks(el);
-
-    if (!tokens.length) {
-      el.open = false;
-      return;
-    }
+    if (!tokens.length) return;
 
     var haystack = normalizeSearchText([
       el.getAttribute('data-name') || '',
@@ -1061,30 +1191,237 @@ function searchRecipes() {
     });
 
     if (matched) {
-      el.classList.add('search-match');
-      el.open = true;
-      markTextInNode(el.querySelector('.recipe-name'), tokens);
-      markTextInNode(el.querySelector('.recipe-desc'), tokens);
-      markTextInNode(el.querySelector('.recipe-body'), tokens);
-    } else {
-      el.classList.add('search-hidden');
-      el.open = false;
+      matches.push(el);
     }
   });
-
-  document.querySelectorAll('.cat-section').forEach(function(sec) {
-    if (!tokens.length) {
-      sec.style.display = '';
-      return;
-    }
-    var visible = sec.querySelectorAll('.cloud-recipe:not(.search-hidden)').length;
-    sec.style.display = visible ? '' : 'none';
-  });
+  return matches;
 }
 
 function doSearch() {
-  searchRecipes();
+  var matches = searchRecipes();
+  var input = document.getElementById('searchInput');
+  var clearBtn = document.getElementById('clearSearchBtn');
+  var resultCount = document.getElementById('searchResultCount');
+  var panel = document.getElementById('searchResultsPanel');
+  var hasQuery = !!(input && input.value.trim());
+  if (clearBtn) clearBtn.style.display = hasQuery ? 'inline-block' : 'none';
+  if (resultCount) resultCount.textContent = hasQuery ? 'נמצאו ' + matches.length + ' מתכונים' : '';
+  if (!panel) return;
+  panel.innerHTML = '';
+  panel.classList.toggle('visible', hasQuery);
+  if (!hasQuery) return;
+  if (!matches.length) {
+    panel.innerHTML = '<div class="search-empty">לא נמצאו מתכונים מתאימים</div>';
+    return;
+  }
+  matches.forEach(function(recipe) {
+    var item = document.createElement('button');
+    item.type = 'button';
+    item.className = 'search-result-item';
+    var name = recipe.getAttribute('data-name') || '';
+    var cat = recipe.getAttribute('data-cat') || '';
+    var by = recipe.getAttribute('data-by') || '';
+    var strong = document.createElement('strong');
+    strong.textContent = name;
+    var meta = document.createElement('span');
+    meta.textContent = cat + (by ? '  ✦  ' + by : '');
+    item.appendChild(strong);
+    item.appendChild(meta);
+    item.onclick = function() { openSearchResult(recipe.id); };
+    panel.appendChild(item);
+  });
 }
+
+function clearRecipeSearch() {
+  var input = document.getElementById('searchInput');
+  if (!input) return;
+  input.value = '';
+  doSearch();
+  input.focus();
+}
+
+function openSearchResult(recipeId) {
+  var recipe = document.getElementById(recipeId);
+  if (!recipe) return;
+  document.querySelectorAll('.cat-section').forEach(function(sec) { sec.style.display = ''; });
+  document.querySelectorAll('details.recipe[open]').forEach(function(el) { el.open = false; });
+  recipe.open = true;
+  recipe.classList.add('search-match');
+  var panel = document.getElementById('searchResultsPanel');
+  if (panel) panel.classList.remove('visible');
+  setTimeout(function() {
+    var stickyBar = document.querySelector('.search-bar');
+    var offset = stickyBar ? stickyBar.offsetHeight + 12 : 12;
+    var top = recipe.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({top:Math.max(0,top),behavior:'smooth'});
+  }, 80);
+}
+
+var favoritesViewActive = false;
+
+function getFavoriteIds() {
+  try {
+    var value = JSON.parse(localStorage.getItem('favorite_recipes') || '[]');
+    return Array.isArray(value) ? value : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveFavoriteIds(ids) {
+  try { localStorage.setItem('favorite_recipes', JSON.stringify(ids)); } catch (e) {}
+}
+
+function updateFavoriteButton(recipe) {
+  if (!recipe) return;
+  var button = recipe.querySelector('.favorite-btn');
+  if (!button) return;
+  var isFavorite = getFavoriteIds().indexOf(recipe.id) !== -1;
+  button.textContent = isFavorite ? '♥' : '♡';
+  button.style.color = isFavorite ? '#c6284d' : '#777';
+  button.title = isFavorite ? 'הסרה מהאהובים' : 'הוספה לאהובים';
+}
+
+function updateFavoritesCount() {
+  var count = document.getElementById('favoritesCount');
+  if (count) count.textContent = getFavoriteIds().length;
+}
+
+function toggleFavorite(button) {
+  var recipe = button.closest('details.recipe');
+  if (!recipe) return;
+  var ids = getFavoriteIds();
+  var index = ids.indexOf(recipe.id);
+  if (index === -1) ids.push(recipe.id);
+  else ids.splice(index, 1);
+  saveFavoriteIds(ids);
+  updateFavoriteButton(recipe);
+  updateFavoritesCount();
+  if (favoritesViewActive) applyFavoritesView();
+}
+
+function applyFavoritesView() {
+  var ids = getFavoriteIds();
+  document.querySelectorAll('.cloud-recipe').forEach(function(recipe) {
+    recipe.style.display = favoritesViewActive && ids.indexOf(recipe.id) === -1 ? 'none' : '';
+  });
+  document.querySelectorAll('.cat-section').forEach(function(section) {
+    var visible = Array.from(section.querySelectorAll('.cloud-recipe')).some(function(recipe) {
+      return recipe.style.display !== 'none';
+    });
+    section.style.display = visible ? '' : 'none';
+  });
+  var button = document.getElementById('favoritesFilterBtn');
+  if (button) button.classList.toggle('active', favoritesViewActive);
+}
+
+function toggleFavoritesView() {
+  favoritesViewActive = !favoritesViewActive;
+  clearRecipeSearch();
+  applyFavoritesView();
+}
+
+var currentShoppingRecipeName = '';
+var currentShoppingRecipeId = '';
+
+function isHomeStaple(text) {
+  var value = String(text || '').trim();
+  if (value.indexOf('מים') !== -1) return true;
+  if (value.indexOf('מלח') !== -1) return true;
+  if (value.indexOf('פלפל שחור') !== -1) return true;
+  if (value.indexOf('פלפל') !== -1 && !/(אדום|ירוק|צהוב|כתום|חריף|גמבה|פלפלים)/.test(value)) return true;
+  if (value.indexOf('קמח') !== -1 && !/(תופח|מלא|כוסמין|שקדים|תירס|אורז|חומוס|ללא גלוטן|שמרים)/.test(value)) return true;
+  return false;
+}
+
+function isIngredientHeading(text) {
+  var value = String(text || '').trim().replace(/[:：]+$/,'').trim();
+  var headings = [
+    'למילוי','לבצק','למרק','לרוטב','לקציצות','לציפוי','לקישוט',
+    'להגשה','לטיגון','לתיבול','לסלט','לקרם','למלית','למשרה',
+    'לתחתית','לשכבה','לבשר','לעוף','לדג','לפירורים'
+  ];
+  return headings.indexOf(value) !== -1;
+}
+
+function createShoppingRow(text, checked) {
+  var row = document.createElement('div');
+  row.className = 'shopping-row';
+  var checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.checked = checked;
+  checkbox.setAttribute('aria-label', 'כלול ברשימת הקניות');
+  var input = document.createElement('input');
+  input.type = 'text';
+  input.value = text;
+  var remove = document.createElement('button');
+  remove.type = 'button';
+  remove.className = 'shopping-remove';
+  remove.textContent = '✕';
+  remove.title = 'מחיקת מצרך';
+  remove.onclick = function() { row.remove(); };
+  row.appendChild(checkbox);
+  row.appendChild(input);
+  row.appendChild(remove);
+  return row;
+}
+
+function openShoppingList(btn) {
+  var recipe = btn.closest('details');
+  if (!recipe) return;
+  var name = recipe.querySelector('.recipe-name');
+  currentShoppingRecipeName = name ? name.textContent.trim() : 'מתכון';
+  currentShoppingRecipeId = recipe.id || '';
+  var title = document.getElementById('shoppingRecipeName');
+  var needed = document.getElementById('shoppingNeededList');
+  var staples = document.getElementById('shoppingStaplesList');
+  title.textContent = 'המצרכים עבור ' + currentShoppingRecipeName;
+  needed.innerHTML = '';
+  staples.innerHTML = '';
+  recipe.querySelectorAll('.two-col > div:first-child li').forEach(function(item) {
+    var text = item.textContent.trim();
+    if (isIngredientHeading(text)) return;
+    var staple = isHomeStaple(text);
+    (staple ? staples : needed).appendChild(createShoppingRow(text, !staple));
+  });
+  document.getElementById('shoppingOverlay').style.display = 'flex';
+}
+
+function closeShoppingList() {
+  document.getElementById('shoppingOverlay').style.display = 'none';
+}
+
+function addShoppingItem() {
+  var list = document.getElementById('shoppingNeededList');
+  var row = createShoppingRow('', true);
+  list.appendChild(row);
+  row.querySelector('input[type="text"]').focus();
+}
+
+function sendShoppingToWhatsApp() {
+  var selected = [];
+  document.querySelectorAll('#shoppingOverlay .shopping-row').forEach(function(row) {
+    var checkbox = row.querySelector('input[type="checkbox"]');
+    var input = row.querySelector('input[type="text"]');
+    var value = input ? input.value.trim() : '';
+    if (checkbox && checkbox.checked && value) selected.push('⬜ ' + value);
+  });
+  if (!selected.length) {
+    showToast('לא נבחרו מצרכים');
+    return;
+  }
+  var recipeUrl = currentShoppingRecipeId
+    ? 'https://yanivvip.github.io/YK-recipe-book/?recipe=' + encodeURIComponent(currentShoppingRecipeId)
+    : 'https://yanivvip.github.io/YK-recipe-book/';
+  var text = '🛒 רשימת קניות עבור ' + currentShoppingRecipeName + '\n\n' + selected.join('\n') +
+    '\n\n🍽️ למתכון המלא\n' + recipeUrl;
+  window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+}
+
+window.addEventListener('scroll', function() {
+  var btn = document.getElementById('backToTopBtn');
+  if (btn) btn.classList.toggle('visible', window.scrollY > 500);
+});
 
 // ── Admin ─────────────────────────────────────────────────────────────────────
 function setAdminUi(isAdmin) {
